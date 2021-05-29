@@ -1,0 +1,120 @@
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<head th:fragment="header-css">
+
+    <!-- Bootstrap 3.3.7 -->
+    <link rel="stylesheet" th:href="@{/css/bootstrap/bootstrap.min.css}">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" th:href="@{/css/font-awesome/font-awesome.min.css}"
+          href="../../static/css/font-awesome/font-awesome.min.css">
+    <!-- Ionicons -->
+    <link rel="stylesheet" th:href="@{/css/ionicons/ionicons.min.css}"
+          href="../../static/css/ionicons/ionicons.min.css">
+    <!-- Theme style -->
+    <link rel="stylesheet" th:href="@{/css/adminlte/AdminLTE.min.css}"
+          href="../../static/css/adminlte/AdminLTE.min.css">
+    <link rel="stylesheet" th:href="@{/css/adminlte/skins/_all-skins.min.css}"
+          href="../../static/css/adminlte/skins/_all-skins.min.css">
+    <link rel="stylesheet" th:href="@{/css/kendo/kendo.common.min.css}"
+          href="../../static/css/kendo/kendo.common.min.css">
+    <link rel="stylesheet" th:href="@{/css/kendo/kendo.bootstrap.min.css}"
+          href="../../static/css/kendo/kendo.bootstrap.min.css">
+
+
+    <script type="text/javascript" th:src="@{/js/jquery-3.2.1.min.js}"
+            src="../../static/js/jquery-3.2.1.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/bootstrap/bootstrap.min.js}"
+            src="../../static/js/bootstrap/bootstrap.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/adminlte/adminlte.min.js}"
+            src="../../static/js/adminlte/adminlte.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/jquery-slimscroll/jquery.slimscroll.min.js}"
+            src="../../static/js/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+
+    <!--Kendo libraries-->
+    <script type="text/javascript" th:src="@{/js/kendo/kendo.all.min.js}"
+            src="../../static/js/kendo/kendo.all.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/kendo/cultures/kendo.culture.zh-CN.min.js}"
+            src="../../static/js/kendo/cultures/kendo.culture.zh-CN.min.js"></script>
+    <script type="text/javascript" th:src="@{/js/kendo/messages/kendo.messages.zh-CN.min.js}"
+            src="../../static/js/kendo/messages/kendo.messages.zh-CN.min.js"></script>
+
+    <!--commons.js -->
+    <script type="text/javascript" th:src="@{/js/commons.js}"
+            src="../../static/js/commons.js"></script>
+    <!--echarts-->
+    <script type="text/javascript" th:src="@{/js/echarts/echarts.min.js}"
+            src="../../static/js/echarts/echarts.min.js"></script>
+</head>
+<!-- 页眉 -->
+<header class="main-header" th:fragment="header-body">
+
+    <!-- Logo -->
+    <a href="/mc/index" class="logo">
+        <!-- mini logo for sidebar mini 50x50 pixels -->
+        <span class="logo-mini"><b>共享按摩椅</b>后台管理</span>
+        <!-- logo for regular state and mobile devices -->
+        <span class="logo-lg"><b>共享按摩椅</b>后台管理</span>
+    </a>
+
+    <!-- Header Navbar: style can be found in header.less -->
+    <nav class="navbar navbar-static-top">
+        <!-- Sidebar toggle button-->
+        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+            <span class="sr-only">Toggle navigation</span>
+        </a>
+        <div style="float: left; padding-top: 12px; color: #ffffff; font-size: 18px;" class="main-header">
+            您好，<span sec:authorize="isAuthenticated()" class="hidden-xs">
+                            <span>[[${session.user.name}]]</span>
+                        </span>，您的所属公司为：<span style="color: darkcyan">[[${session.companyName}]]</span>     </div>
+        <!-- Navbar Right Menu -->
+        <div class="navbar-custom-menu">
+            <ul class="nav navbar-nav">
+                <!-- Messages: style can be found in dropdown.less-->
+                <!--<li class="dropdown messages-menu">-->
+                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown">-->
+                        <!--<i class="fa fa-envelope-o"></i>-->
+                        <!--<span class="label label-success">4</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+                <!--&lt;!&ndash; Notifications: style can be found in dropdown.less &ndash;&gt;-->
+                <!--<li class="dropdown notifications-menu">-->
+                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown">-->
+                        <!--<i class="fa fa-bell-o"></i>-->
+                        <!--<span class="label label-warning">10</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+                <!--&lt;!&ndash; Tasks: style can be found in dropdown.less &ndash;&gt;-->
+                <!--<li class="dropdown tasks-menu">-->
+                    <!--<a href="#" class="dropdown-toggle" data-toggle="dropdown">-->
+                        <!--<i class="fa fa-flag-o"></i>-->
+                        <!--<span class="label label-danger">9</span>-->
+                    <!--</a>-->
+                <!--</li>-->
+                <!-- User Account: style can be found in dropdown.less -->
+                <li class="dropdown user user-menu">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                        <!--<img th:src="@{/img/adminlte/user2-160x160.jpg}" src="dist/img/user2-160x160.jpg" class="user-image" alt="User Image">-->
+                        <span sec:authorize="isAuthenticated()" class="hidden-xs">
+                            <span>系统</span>
+                        </span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        <!-- Menu Footer-->
+                        <li class="user-footer">
+                            <div class="pull-right">
+                                <a th:href="@{/logout}" class="btn btn-default btn-flat">注销</a>
+                            </div>
+                            <div class="pull-right">
+                                <a href="/mc/userc/change" class="btn btn-default btn-flat">修改密码</a>
+                            </div>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+    </nav>
+</header>
+</html>

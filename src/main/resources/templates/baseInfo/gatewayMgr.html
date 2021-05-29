@@ -1,0 +1,498 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>网关管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            网关管理
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">网关管理</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+        <!--<div id="window">-->
+        <!--<table>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--域名:<input type="text" id="domainName" class="k-input k-textbox" placeholder="请输入域名">-->
+        <!--端口:<input type="text" id="port" class="k-input k-textbox" placeholder="请输入端口">-->
+        <!--<button id="btnUpdatePort" type="button" class="k-button  k-primary">修改端口</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--频道:<input type="text" id="channel" class="k-input k-textbox" placeholder="请输入频道">-->
+        <!--<button id="btnUpdateChannel" type="button" class="k-button  k-primary">修改频道</button>-->
+        <!--</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--<button id="btnRestart" type="button" class="k-button  k-primary">重启网关</button>-->
+        <!--</div>-->
+        <!--</table>-->
+        <!--</div>-->
+
+        <div id="grid"></div>
+        <script id="popup_editor" type="text/x-kendo-template">
+            <div class="k-edit-label"><label for="gatewaySn"><span style="color:red;">*</span>网关编号</label></div>
+            <div data-container-for="gatewaySn" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                            name="gatewaySn" required="required"
+                                                                            data-required-msg="请您填写网关编号"
+                                                                            data-bind="value:gatewaySn"></div>
+            <!--<div class="k-edit-label"><label for="ip"><span style="color:red;"></span>网关通讯ip</label></div>
+            <div data-container-for="ip" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                     name="ip"></div>-->
+            <div class="k-edit-label"><label for="domainName"><span style="color:red;"></span>域名</label></div>
+            <div data-container-for="domainName" class="k-edit-field"><input type="text" class="k-input k-textbox"
+            name="domainName"></div>
+            <!--<div class="k-edit-label"><label for="port"><span style="color:red;"></span>网关通讯端口</label></div>-->
+            <!--<div data-container-for="port" class="k-edit-field"><input type="text" class="k-input k-textbox"-->
+            <!--name="port"></div>-->
+            <!--<div class="k-edit-label"><label for="channel"><span style="color:red;"></span>网关通讯频道</label></div>-->
+            <!--<div data-container-for="channel" class="k-edit-field"><input type="text" class="k-input k-textbox"-->
+            <!--name="channel"></div>-->
+            <div class="k-edit-label"><label for="deviceCount"><span style="color:red;"></span>设备数量</label></div>
+            <div data-container-for="deviceCount" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                              name="deviceCount"></div>
+            <div class="k-edit-label"><label for="placeId"><span style="color:red;">* </span>所属场地</label></div>
+            <div data-container-for="placeId" class="k-edit-field">
+                <input id="placeId" data-role="combobox" data-bind="value:placeId" required="required"
+                       data-required-msg="所属场地为必填项！">
+            </div>
+
+            <div class="k-edit-label"><label for="protocolType"><span style="color:red;"></span>协议类型</label></div>
+            <div data-container-for="protocolType" class="k-edit-field">
+                <input id="protocolType" data-role="combobox" data-bind="value:protocolType" required="required"
+                       data-required-msg="协议类型为必填项！">
+            </div>
+        </script>
+        <script>
+            /*<![CDATA[*/
+            $(function () {
+                // $("#window").hide();
+
+                loadUserList();
+            });
+
+            //初始化表格数据
+            function loadUserList() {
+                var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "./allGateway"
+                        },
+                        create: {
+                            url: "./insertGateway",
+                            dataType: "json",
+                            type: "post",
+                            contentType:"application/json;charset=UTF-8"
+                        },
+                        update: {
+                            url: "./updateGateway",
+                            dataType: "json",
+                            type: "post",
+                            contentType:"application/json;charset=UTF-8"
+                        },
+                        parameterMap:function(options, operation){
+                            if (operation === "create" || operation === "update") {
+                                return kendo.stringify(options);
+                            }
+                        }
+                    },
+                    serverPaging: false,    //设定服务器来实现分页功能
+                    serverFiltering: false,
+                    serverSorting: false,
+                    pageSize: 10,
+                    requestEnd: onRequestEnd,
+                    schema: {
+                        model: {
+                            id: "id",
+                            fields: {
+                                id: {type: "number", editable: false},
+                                ip: {type: "string"},
+                                domainName: {type: "string"},
+                                port: {type: "string"},
+                                channel: {type: "string"},
+                                gatewaySn: {type: "string"},
+                                deviceCount: {type: "number"},
+                                placeId:{type: "number"},
+                                placeName:{type: "string"},
+                                lastCorrespondTime:{type: "timestamp",editable: false},
+                                status:{type:"int",editable: false},
+                                statusName:{type: "string",editable: false},
+                                protocolType:{type:"number"},
+                                protocolTypeName:{type: "string"}
+                            }
+                        },
+                        data: function (response) {
+                            var list = JSON.parse(response).data;
+                            return list;
+                        },
+                        total:function(response){
+                            return JSON.parse(response).total;
+                        }
+                    }
+                });
+
+                //dataSource是必填属性
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    height: 600,
+                    sortable: true, //表示是否支持排序， boolean型
+                    filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                    groupable: true,//表格标题
+                    resizable: true,
+                    toolbar: [{name: "create", text: "新增"}],
+                    columnMenu: true,
+                    pageable: {
+                        pageSizes: true,
+                        buttonCount: 5,
+                        totalPages: true,
+                        refresh: true,
+                        pageSize: 5,
+                        pageSizes: [5, 10, 15, 20],
+                        numeric: true,
+                        input: true,
+                        messages: {
+                            display: "显示 {0}-{1} 条，共 {2} 条",
+                            empty: "没有数据",
+                            itemsPerPage: "每页显示数量",
+                            first: "第一页",
+                            last: "最后一页",
+                            next: "下一页",
+                            previous: "上一页",
+                            page: "页",
+                            of: "共 {0}页"
+                        }
+                    },
+                    columns: [
+                        {
+                            field: "gatewaySn",
+                            title: "网关编号",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "ip",
+                            title: "网关通讯ip",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "domainName",
+                            title: "域名",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "port",
+                            title: "网关通讯端口",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        }, {
+                            field: "channel",
+                            title: "网关通讯频道",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        }, {
+                            field: "deviceCount",
+                            title: "设备数量",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "placeName",
+                            title: "所属场地",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "lastCorrespondTime",
+                            title: "最后通信时间",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "statusName",
+                            title: "是否在线",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;#=statusName === '在线' ? 'background-color:lime;' : 'background-color:gold;'#"}
+                        },
+                        {
+                            field: "protocolTypeName",
+                            title: "协议类型",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            command: [
+                                {
+                                    name: "edit", text: {edit: "编辑", cancel: "取消", update: "更新"}
+                                },
+                                {
+                                    text: "修改网关信息",//名称
+                                    click: function (e) {
+                                        var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                        var data = this.dataItem(tr);
+
+                                        // $("#window").show();
+                                        var str = " <div id='window'>" +
+                                            "            <table>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    <span style='color:red;'>"+data.gatewaySn+"</span>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    域名:<input type='text' id='domainName' class='k-input k-textbox' placeholder='请输入域名'>" +
+                                            "                    端口:<input type='text' id='port' class='k-input k-textbox' placeholder='请输入端口'>" +
+                                            "                    <button id='btnUpdatePort' type='button' class='k-button  k-primary'>修改端口</button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    频道:<input type='text' id='channel' class='k-input k-textbox' placeholder='请输入频道'>" +
+                                            "                    <button id='btnUpdateChannel' type='button' class='k-button  k-primary'>修改频道</button>" +
+                                            "                    </button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    <button id='btnRestart' type='button' class='k-button  k-primary'>重启网关</button>" +
+                                            "                </div>" +
+                                            "            </table>" +
+                                            "        </div>";
+
+                                        var detailWindow = $(str);
+                                        $("body").append(detailWindow);
+
+                                        var myWindow = $("#window");
+                                        myWindow.kendoWindow({
+                                            width: "450px",
+                                            height: "300px",
+                                            title: "修改网关信息",
+                                            close: function () {
+                                                myWindow.data("kendoWindow").destroy();
+                                            }
+                                        });
+
+                                        myWindow.data("kendoWindow").center().open();
+
+                                        var g = $("#grid").data("kendoGrid");
+
+                                        $("#btnUpdatePort").kendoButton({
+                                            click: function () {
+                                                var domainName = $("#domainName").val();
+                                                var port = $("#port").val();
+
+                                                if (domainName == "") {
+                                                    alert("请输入域名！");
+                                                    return;
+                                                }
+                                                if (port == "") {
+                                                    alert("请输入端口！");
+                                                    return;
+                                                }
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../gatewayMgr/updateGatewayPort",
+                                                    data: {
+                                                        domainName: domainName,
+                                                        port: port,
+                                                        gatewaySn:data.gatewaySn
+                                                    },
+                                                    success: function (res) {
+                                                        alert("修改域名端口成功，请重启网关！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        // //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnUpdateChannel").kendoButton({
+                                            click: function () {
+
+                                                var channel = $("#channel").val();
+                                                if (channel == "") {
+                                                    alert("请输入频道！");
+                                                    return;
+                                                }
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../gatewayMgr/updateGatewayChannel",
+                                                    data: {
+                                                        channel: channel,
+                                                        gatewaySn:data.gatewaySn
+                                                    },
+                                                    success: function (res) {
+                                                        alert("修改频道成功，请重启网关！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnRestart").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../gatewayMgr/restartGateway",
+                                                    data: {
+                                                        gatewaySn:data.gatewaySn
+                                                    },
+                                                    success: function (res) {
+                                                        alert("重启网关成功！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                    }
+                                }
+                            ],
+                            title: "操作",
+                            width: "250px"
+                        }
+                    ],
+                    editable: {
+                        mode: "popup",
+                        template: kendo.template($("#popup_editor").html()),
+                        window: {
+                            title: "网关管理"
+                        }
+                    },
+                    edit: function (e) {
+                        $("#placeId").kendoComboBox({
+                            autoBind: false,
+                            placeholder: "请选择...",
+                            dataTextField: "name",
+                            dataValueField: "id",
+                            value: e.model.placeId,
+                            text: e.model.placeName,
+                            filter: "contains",
+                            suggest: true,
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        type: "get",
+                                        url: "../placeMgr/allPlace",
+                                        dataType: "json",
+                                        contentType: "application/json",
+                                        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                    }
+                                }
+                            }
+                        });
+
+                        $("#protocolType").kendoComboBox({
+                            // autoBind: false,
+                            placeholder: "请选择...",
+                            dataValueField: "id",
+                            dataTextField: "name",
+                            value: e.model.protocolType,
+                            text: e.model.protocolTypeName,
+                            filter: "contains",
+                            suggest: true,
+                            dataSource: [
+                                { name:"老协议", id:"1"},
+                                { name:"眯会儿协议", id: "2"}
+                            ]
+                        });
+
+                    }
+                });
+            }
+
+            //add tooltip
+            $("#grid").kendoTooltip({
+                show: function (e) {
+                    if ($.trim(this.content.text()) != "") {
+                        $('[role="tooltip"]').css("visibility", "visible");
+                    }
+                },
+                hide: function () {
+                    $('[role="tooltip"]').css("visibility", "hidden");
+                },
+                filter: "td:nth-child(n+3)",
+                content: function (e) {
+                    var element = e.target[0];
+                    if (element.offsetWidth < element.scrollWidth) {
+                        var text = $(e.target).text();
+                        return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';
+                    } else {
+                        $('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块
+                        return "";
+                    }
+                }
+            }).data("kendoTooltip");
+
+            //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+            function onRequestEnd(e) {
+                if (e.type == "create") {
+                    e.sender.read();       //调用read方法 重新读取表格
+                }
+                else if (e.type == "update") {
+                    e.sender.read();
+                }
+                else if (e.type == "destroy") {
+                    e.sender.read();
+                }
+
+                //更新成功后弹出提示信息
+                var response = e.response;
+                if (response) {
+                    var type = e.type;
+                    if (type != 'read') {
+                        var status = response.status;
+                        if (status == 200) {
+                            this.read();
+                        }
+                        else {
+                            // alert(response.msg);
+                        }
+                    }
+                }
+            }
+
+
+            function changeDate(container, options) {
+                var input = $('<input name="' + options.field + '"/>');
+                input.appendTo(container);
+                input.kendoDateTimePicker({
+                    format: "{0:yyyy-MM-dd HH:mm}"
+                });
+            }
+
+            /*]]>*/
+        </script>
+        <!--设置tooltip的样式-->
+        <style>
+            div[role=tooltip].k-tooltip {
+                padding: 2px;
+                background: #5c9acf;
+            }
+
+            .k-tooltip-content {
+                padding: 4px;
+                text-align: left;
+                background: #fff;
+                color: #666;
+            }
+
+            .k-callout {
+                border-bottom-color: #5c9acf;
+            }
+        </style>
+    </div>
+
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

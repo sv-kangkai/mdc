@@ -1,0 +1,515 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>订单管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+    <section class="content-header">
+        <h1>
+            订单查询
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">订单查询</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+        <div id="example" >
+            <div class="demo-section k-content">
+                <div id="fieldlist" style="background-color:#EDF0F4">
+                    <br>
+                    <div>
+                        <label for="start">起始时间 :</label> <input id="start" style="width: 150px;" value="起始时间"/>
+                        <label for="end">结束时间 :</label> <input id="end" style="width: 150px;" value="结束时间"/>
+                        <!--<label>场地:</label> <input id="place"/>-->
+                        <button class="k-button  k-primary" onclick="grid()">查询</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <br>
+
+
+        <div class="container-fluid">
+            <div id="grid"><span id="toolbar"></span></div>
+
+            <script id="template" type="text/x-kendo-template">
+                <a class="k-button" onclick="getExcel()">导出Excel</a>
+            </script>
+            <script>
+                /*<![CDATA[*/
+                $(document).ready(function() {
+                    // $("#place").kendoComboBox({
+                    //     autoBind: false,
+                    //     placeholder: "请选择...",
+                    //     dataTextField: "name",
+                    //     dataValueField: "id",
+                    //     filter: "contains",
+                    //     suggest: true,
+                    //     dataSource: {
+                    //         transport: {
+                    //             read: {
+                    //                 type: "get",
+                    //                 url: "../place/findAllPlaceFirst",
+                    //                 dataType: "json",
+                    //                 contentType: "application/json",
+                    //                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                    //             }
+                    //         }
+                    //     }
+                    // });
+
+                    function nowDate(){
+                        var date = new Date();
+                        var year = date.getFullYear();
+                        var month = date.getMonth() + 1;
+                        var day = date.getDate();
+                        var hour = date.getHours();
+                        var minute = date.getMinutes();
+                        return year + '-' + month + '-' + day  + ' ' + hour + ':' + minute;
+                    }
+
+                    function oneWeekBefore(){
+                        var now = new Date();
+                        var date = new Date(now.getTime() - 7 * 24 * 3600 * 1000);
+                        var year = date.getFullYear();
+                        var month = date.getMonth() + 1;
+                        var day = date.getDate();
+                        var hour = date.getHours();
+                        var minute = date.getMinutes();
+                        return year + '-' + month + '-' + day  + ' ' + hour + ':' + minute;
+                    }
+
+                    function startChange() {
+                        var startDate = start.value(),
+                            endDate = end.value();
+
+                        if (startDate) {
+                            startDate = new Date(startDate);
+                            startDate.setDate(startDate.getDate());
+                            end.min(startDate);
+                        } else if (endDate) {
+                            start.max(new Date(endDate));
+                        } else {
+                            endDate = new Date();
+                            start.max(endDate);
+                            end.min(endDate);
+                        }
+                    }
+
+                    function endChange() {
+                        var endDate = end.value(),
+                            startDate = start.value();
+
+                        if (endDate) {
+                            endDate = new Date(endDate);
+                            endDate.setDate(endDate.getDate());
+                            start.max(endDate);
+                        } else if (startDate) {
+                            end.min(new Date(startDate));
+                        } else {
+                            endDate = new Date();
+                            start.max(endDate);
+                            end.min(endDate);
+                        }
+                    }
+
+                    var today = nowDate();
+                    var oneWeekBefore = oneWeekBefore();
+
+                    kendo.culture("zh-CN");
+                    var start = $("#start").kendoDateTimePicker({
+                        value: oneWeekBefore,
+                        change: startChange,
+                        format: "{0:yyyy-MM-dd HH:mm}"
+                    }).data("kendoDateTimePicker");
+
+                    var end = $("#end").kendoDateTimePicker({
+                        value: today,
+                        change: endChange,
+                        format: "{0:yyyy-MM-dd HH:mm}"
+                    }).data("kendoDateTimePicker");
+
+                    start.max(end.value());
+                    end.min(start.value());
+                });
+
+                $(function () {
+                    var startTime=$("#start").val();//开始时间
+                    var endTime=$("#end").val();//结束时间
+                    // var placeId = $("#place").data("kendoComboBox").value();//场地id
+                    // if (placeId == "") {
+                    //     placeId = 0;
+                    // }
+                    loadUserList(startTime,endTime);
+                    // loadUserList(startTime,endTime,placeId);
+                });
+
+                //初始化表格数据
+                function loadUserList(startTime,endTime) {
+                    var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "./allOrder?startTime="+startTime+"&endTime="+endTime
+                            }
+                        },
+                        serverPaging: true,    //设定服务器来实现分页功能
+                        serverFiltering: false,
+                        serverSorting: false,
+                        pageSize: 10,
+                        requestEnd: onRequestEnd,
+                        schema: {
+                            model: {
+                                id: "id",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    code: {type: "string"},
+                                    codeWx: {type: "string"},
+                                    orderSource: {type: "string"},
+                                    statusName: {type: "string"},
+                                    createDateTime: {type: "timestamp"},
+                                    payDateTime: {type: "timestamp"},
+                                    money: {type: "number"},
+                                    mcStartDateTime: {type: "timestamp"},
+                                    mcEndDateTime: {type: "timestamp"},
+                                    mcStatus: {type: "int"},
+                                    deviceId: {type: "int"},
+                                    deviceSn: {type: "string"},
+                                    mcTime: {type: "number"},
+                                    description: {type: "string"},
+                                    cancelReason: {type: "string"},
+                                    placeName: {type: "string"}
+                                }
+                            },
+                            data: function (response) {
+                                var list = JSON.parse(response).data;
+                                return list;
+                            },
+                            total: function (response) {
+                                return JSON.parse(response).total;
+                            }
+                        }
+                    });
+
+                    //dataSource是必填属性
+                    $("#grid").kendoGrid({
+                        dataSource: dataSource,
+                        toolbar: [
+                            {template: kendo.template($("#template").html())}
+
+                        ],
+                        height: 600,
+                        sortable: true, //表示是否支持排序， boolean型
+                        filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                        groupable: true,//表格标题
+                        resizable: true,
+                        columnMenu: true,
+                        pageable: {
+                            // empty:"没有要显示的数据",
+                            // //代表是否支持刷新
+                            // refresh: true,
+                            // //表示每页显示的记录数，默认为5,10,20
+                            pageSizes: true,
+                            // //表示显示的页数，5表示1,2,3,4,5
+                            buttonCount: 5,
+                            totalPages: true,
+                            // input: true,//表示是否可以输入数字
+                            refresh: true,
+                            pageSize: 5,
+                            pageSizes: [5, 10, 15, 20],
+                            numeric: true,
+                            input: true,
+                            messages: {
+                                display: "显示 {0}-{1} 条，共 {2} 条",
+                                empty: "没有数据",
+                                itemsPerPage: "每页显示数量",
+                                first: "第一页",
+                                last: "最后一页",
+                                next: "下一页",
+                                previous: "上一页",
+                                page: "页",
+                                of: "共 {0}页"
+                            }
+                        },
+                        columns: [
+                            {
+                                field: "orderSource",
+                                title: "来源",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "id",
+                                title: "订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "code",
+                                title: "系统订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "codeWx",
+                                title: "外部订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "statusName",
+                                title: "订单状态",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "createDateTime",
+                                title: "订单创建时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "payDateTime",
+                                title: "订单支付时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "money",
+                                title: "订单金额(￥)",
+                                format: "{0:n2}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;text-align:right"}
+                            },
+                            {
+                                field: "mcStartDateTime",
+                                title: "开始按摩时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "mcEndDateTime",
+                                title: "结束按摩时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            // {
+                            //     field: "mcStatus",
+                            //     title: "按摩椅状态"
+                            // },
+                            {
+                                field: "deviceSn",
+                                title: "设备编号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "placeName",
+                                title: "所属场地",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "mcTime",
+                                title: "按摩时长(分钟)",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;text-align:right"}
+                            },
+                            {
+                                field: "description",
+                                title: "取消订单原因",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "cancelReason",
+                                title: "备注",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }
+                            // {
+                            //     command: [
+                            //         {
+                            //             text: "添加备注",//名称
+                            //             click: function (e) {
+                            //                 // e.target 是表示按钮的DOM元素
+                            //                 var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                            //                 // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                            //                 var data = this.dataItem(tr);
+                            //                 var oldText = data.cancelReason;
+                            //                 var orderId = data.id;
+                            //
+                            //                 var detailWindow = $("<div id='window'><textarea id='textarea' style='width:400px;height: 250px' rows='4'></textarea><button id='btn' type='button'>提交</button></div>");
+                            //                 $("body").append(detailWindow);
+                            //
+                            //                 var myWindow = $("#window");
+                            //                 myWindow.kendoWindow({
+                            //                     width: "500px",
+                            //                     height: "300px",
+                            //                     title: "添加备注",
+                            //                     close: function () {
+                            //                         myWindow.data("kendoWindow").destroy();
+                            //                     }
+                            //                 });
+                            //
+                            //                 myWindow.data("kendoWindow").center().open();
+                            //
+                            //                 $("#textarea").val(oldText);
+                            //
+                            //                 $("#btn").kendoButton({
+                            //                     click: function () {
+                            //                         var text = $("#textarea").val();
+                            //
+                            //                         $.ajax({
+                            //                             type: "post",
+                            //                             url: "../orderMgr/addOrderDescription",
+                            //                             data: {
+                            //                                 orderId: orderId,
+                            //                                 description: text
+                            //                             },
+                            //                             success: function (res) {
+                            //                                 myWindow.data("kendoWindow").close();
+                            //                                 $("#textarea").hide();
+                            //                                 $("#textarea").val("");
+                            //                                 // var grid = $("#grid").data("kendoGrid");
+                            //                                 // grid.dataSource.read();
+                            //                                 location.reload();
+                            //                             }
+                            //                         })
+                            //                     }
+                            //                 });
+                            //
+                            //             }
+                            //         }],
+                            //     title: "操作",
+                            //     width: "100px"
+                            // }
+                        ]
+                    });
+                }
+
+
+                //add tooltip
+                $("#grid").kendoTooltip({
+                    show: function (e) {
+                        if ($.trim(this.content.text()) != "") {
+                            $('[role="tooltip"]').css("visibility", "visible");
+                        }
+                    },
+                    hide: function () {
+                        $('[role="tooltip"]').css("visibility", "hidden");
+                    },
+                    filter: "td:nth-child(n+3)",
+                    content: function (e) {
+                        var element = e.target[0];
+                        if (element.offsetWidth < element.scrollWidth) {
+                            var text = $(e.target).text();
+                            return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';
+                        } else {
+                            $('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块
+                            return "";
+                        }
+                    }
+                }).data("kendoTooltip");
+
+                //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+                function onRequestEnd(e) {
+                    if (e.type == "create") {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                    else if (e.type == "update") {
+                        e.sender.read();
+                    }
+                    else if (e.type == "destroy") {
+                        e.sender.read();
+                    }
+
+                    //更新成功后弹出提示信息
+                    var response = e.response;
+                    if (response) {
+                        var type = e.type;
+                        if (type != 'read') {
+                            var status = response.status;
+                            if (status == 200) {
+                                this.read();
+                            }
+                            else {
+                                // alert(response.msg);
+                            }
+                        }
+                    }
+                    // else{
+                    //     alert("服务器异常，请重试！");
+                    // }
+                }
+
+                //点击查询按钮
+                function grid() {
+                    var startTime=$("#start").val();//开始时间
+                    var endTime=$("#end").val();//结束时间
+                    //
+                    // var placeId = $("#place").data("kendoComboBox").value();//场地id
+                    // if (placeId == "") {
+                    //     placeId = 0;
+                    // }
+                    console.log(startTime);
+                    console.log(endTime);
+
+                    if (startTime=="起始时间" || endTime=="结束时间"){
+                        alert("请选择起始和结束时间");
+                        return;
+                    }
+
+                    loadUserList(startTime,endTime);
+                }
+
+                /*]]>*/
+            </script>
+
+            <script>
+
+                function getExcel() {
+                    //t, {name:"导出excel",click:function(){
+                    var startTime=$("#start").val();//开始时间
+                    var endTime=$("#end").val();//结束时间
+                    $.ajax({
+                        type: "GET",
+                        url: "../orderMgr/getExcelOrder?startTime="+startTime+'&endTime='+endTime,
+
+                        contentType: "application/json; charset=utf-8",
+
+                        success: function () {
+
+                            window.location = "../orderMgr/getExcelOrder?startTime="+startTime+'&endTime='+endTime
+
+                        }
+
+                    })
+
+                }
+
+
+            </script>
+
+            <!--设置tooltip的样式-->
+            <style>
+                div[role=tooltip].k-tooltip {
+                    padding: 2px;
+                    background: #5c9acf;
+                }
+
+                .k-tooltip-content {
+                    padding: 4px;
+                    text-align: left;
+                    background: #fff;
+                    color: #666;
+                }
+
+                .k-callout {
+                    border-bottom-color: #5c9acf;
+                }
+            </style>
+        </div>
+
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

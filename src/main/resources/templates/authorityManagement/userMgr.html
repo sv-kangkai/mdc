@@ -1,0 +1,688 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>用户信息管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+        <h1>
+            用户信息管理
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">用户信息管理</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+
+        <!--<div>-->
+            <!--<div id="window">-->
+                <!--<div id="roleList"></div>-->
+                <!--<div id="roleList1"></div>-->
+            <!--</div>-->
+
+            <!--<div class="responsive-message"></div>-->
+        <!--</div>-->
+
+        <div id="grid"></div>
+
+
+        <script id="popup_editor" type="text/x-kendo-template">
+            <div class="k-edit-label"><label for="userName"><span style="color:red;">*</span> 账号</label></div>
+            <div data-container-for="userName" class="k-edit-field"><input type="text" onkeyup="value=value.replace(/[^0-9a-zA-Z]/g,'')" class="k-input k-textbox" name="userName" required="required" data-required-msg="请您填写账号" data-bind="value:userName"></div>
+
+            <div class="k-edit-label"><label for="name"><span style="color:red;">*</span> 姓名</label></div>
+            <div data-container-for="name" class="k-edit-field"><input type="text" class="k-input k-textbox" name="name" required="required" data-required-msg="请您填写姓名" data-bind="value:name"></div>
+
+            <div class="k-edit-label"><label for="email">邮箱</label></div>
+            <div data-container-for="email" class="k-edit-field"><input type="text" onkeyup="value=value.replace(/[^\a-\z\A-\Z0-9\u4E00-\u9FA5\@\.]/g,'')" class="k-input k-textbox" name="email" data-bind="value:email"></div>
+
+            <div class="k-edit-label"><label for="company"><span style="color:red;">*</span> 所属公司</label></div>
+            <div data-container-for="company" class="k-edit-field">
+                <input id="company1" data-role="combobox" data-bind="value:company" required="required" data-required-msg="请您选择所属单位"/>
+            </div>
+            <div class="k-edit-label"><label for="authenticationString"><span style="color:red;">*</span> 密码</label></div>
+            <div data-container-for="authenticationString" class="k-edit-field"><input type="text" class="k-input k-textbox" maxlength="16" name="authenticationString" required="required" data-required-msg="请您填写密码" min="8" data-bind="value:authenticationString"></div>
+
+            <div class="k-edit-label"><label for="cellphoneNumber"><span style="color:red;">*</span> 手机</label></div>
+            <div data-container-for="cellphoneNumber" class="k-edit-field"><input type="text" class="k-input k-textbox" maxlength="11" name="cellphoneNumber" required="required" data-required-msg="请您填写手机号" data-bind="value:cellphoneNumber"></div>
+
+            <div class="k-edit-label"><label for="fixedPhoneNumber">固话</label></div>
+            <div data-container-for="fixedPhoneNumber" class="k-edit-field"><input type="text" class="k-input k-textbox" name="fixedPhoneNumber" data-bind="value:fixedPhoneNumber"></div>
+
+        </script>
+        <script>
+
+            /*<![CDATA[*/
+            $(function () {
+                loadUserList();
+            });
+
+
+            //初始化表格数据
+            function loadUserList() {
+                kendo.culture("zh-CN");
+
+                var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "./allStatus"
+                        },
+                        create: {
+                            url: "./save",
+                            dataType: "json",
+                            type: "post",
+                            contentType: "application/json;charset=UTF-8"
+                        },
+                        destroy: {
+                            url: "./delete",
+                            dataType: "json",
+                            type: "post",
+                            contentType: "application/json;charset=UTF-8"
+                        },
+                        update: {
+                            url: "./update",
+                            dataType: "json",
+                            type: "post",
+                            contentType: "application/json;charset=UTF-8"
+                        },
+                        parameterMap: function (options, operation) {
+
+                            // if(operation=="read"){
+                            //     var page = $("#grid").data("kendoGrid").dataSource.page();
+                            //     var pageSize = $("#grid").data("kendoGrid").dataSource.pageSize();
+                            //     return {page:page,pageSize:pageSize};
+                            // }
+
+                            if (operation !== "read") {
+
+                                return kendo.stringify(options);
+                            }
+                        }
+                    },
+                    // serverPaging: true,    //设定服务器来实现分页功能
+                    // serverFiltering: true,
+                    // serverSorting: true,
+                    filterable: true,
+                    scrollable: true,
+                    requestEnd: onRequestEnd,
+                    pageSize: 10,
+                    schema: {
+                        model: {
+                            id: "id",
+                            fields: {
+                                id: {editable: false, nullable: true},
+                                userName: {type: "string", validation: {required: true, required: {message: "请您填写账号"}}},
+                                name: {type: "string", validation: {required: true, required: {message: "请您填写姓名"}}},
+                                authenticationString: {
+                                    type: "string",
+                                    validation: {required: true, required: {message: "请您填写密码"}, min: 8}
+                                },
+                                createDatetime: {type: "Date", editable: false, format: "{0:yyyy-MM-dd HH:mm:ss}"},
+                                email: {type: "string"},
+                                cellphoneNumber: {
+                                    type: "string",
+                                    validation: {required: true, required: {message: "请您填写手机号"}, min: 11, max: 11}
+                                },
+                                fixedPhoneNumber: {type: "string"},
+                                latestLoginDatetime: {type: "Date", editable: false, format: "{0:yyyy-MM-dd HH:mm:ss}"},
+                                // latestLoginIp: {type: "string", editable: false},
+                                company: {
+                                    type: "string",
+                                    validation: {required: true, required: {message: "请您选择所属单位"}}
+                                },
+                                roleEntities: {defaultValue: {id: 1, name: ""}}
+                            }
+                        },
+                        data: function (response) {
+                            return JSON.parse(response).data;
+                        },
+                        total: function (response) {
+                            return JSON.parse(response).total;
+                        }
+                    }
+                });
+                //dataSource是必填属性
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    height: 600,
+                    resizable: true,
+                    groupable: true,
+                    sortable: true, //表示是否支持排序， boolean型
+                    filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                    // groupable: true,//表格标题
+                    // scrollable: {//表示是否有下拉条，boolean型(虚拟分页)
+                    //     virtual: true
+                    // },
+                    toolbar: [{name: "create", text: "新增"}],
+                    columnMenu: true,
+                    pageable: {
+                        // empty:"没有要显示的数据",
+                        // //代表是否支持刷新
+                        // refresh: true,
+                        // //表示每页显示的记录数，默认为5,10,20
+                        pageSizes: true,
+                        // //表示显示的页数，5表示1,2,3,4,5
+                        buttonCount: 5,
+                        totalPages: true,
+                        // input: true,//表示是否可以输入数字
+                        refresh: true,
+                        pageSize: 10,
+                        pageSizes: [5, 10, 15, 20],
+                        numeric: true,
+                        input: true,
+                        messages: {
+                            display: "显示 {0}-{1} 条，共 {2} 条",
+                            empty: "没有数据",
+                            itemsPerPage: "每页显示数量",
+                            first: "第一页",
+                            last: "最后一页",
+                            next: "下一页",
+                            previous: "上一页",
+                            page: "页",
+                            of: "共 {0}页"
+                        }
+                    },
+                    columns: [
+                        {field: "userName", title: "账号", width: 100, filterable: {multi: true, search: true}},
+                        {field: "name", title: "姓名", width: 80, filterable: {multi: true, search: true}},
+                        {field: "email", title: "邮箱", width: 80, filterable: {multi: true}},
+                        {
+                            field: "company",
+                            title: "所属公司",
+                            width: 80,
+                            filterable: {multi: true},
+                            editor: roleListDropDownEditor
+                        },
+                        // { field: "roleEntities", title: "角色", width: 80, filterable: { multi: true },template:$("#role").html() },
+                        {
+                            field: "authenticationString",
+                            title: "密码",
+                            width: 80,
+                            filterable: {multi: true},
+                            hidden: true
+                        },
+                        {field: "cellphoneNumber", title: "手机", width: 80, filterable: {multi: true}},
+                        {field: "fixedPhoneNumber", title: "固话", width: 80, filterable: {multi: true}},
+                        {field: "latestLoginIp", title: "上次登录ip", width: 80, filterable: {multi: true}},
+                        {
+                            field: "latestLoginDatetime",
+                            title: "上次登录时间",
+                            width: 120,
+                            filterable: {multi: true, search: true},
+                            format: "{0:yyyy-MM-dd HH:mm:ss}"
+                        },
+                        // { field: "createDatetime",title: "创建时间",width: 120, filterable: { multi: true, search: true}, format: "{0:yyyy-MM-dd HH:mm:ss}" },
+                        {
+                            command: [
+                                {
+                                    name: "edit", text: {edit: "编辑", cancel: "取消", update: "更新"}
+                                }, {
+                                    name: "角色管理", click: function (e) {
+                                        var tr = $(e.target).closest("tr"); // get the current table row (tr)
+                                        var data = this.dataItem(tr);
+                                        var userId = data.id;
+                                        var detailWindow = $("<div id='DetailWindow'><div id='roleList'></div><div id='roleList1'></div></div>");
+                                        $("body").append(detailWindow);
+                                        var myWindow = $("#DetailWindow");
+                                        myWindow.kendoWindow({
+                                            width: "500px",
+                                            height: "500px",
+                                            title:data.name+ "用户角色管理",
+                                            close: function () {
+                                                myWindow.data("kendoWindow").destroy();
+                                            }
+
+                                        });
+                                        myWindow.data("kendoWindow").center().open();
+
+                                        var dataSource1 = new kendo.data.DataSource({
+                                            transport: {
+                                                read: {
+                                                    url: "./role?userId=" + userId
+                                                },
+                                                destroy: {
+                                                    url: "./deleteRole",
+                                                    dataType: "json",
+                                                    type: "post",
+                                                    contentType: "application/json;charset=UTF-8"
+                                                },
+                                                parameterMap: function (options, operation) {
+
+
+                                                    if (operation === "destroy" && options) {
+                                                        var roleId = options.id;
+
+                                                        var list1 = {
+                                                            roleId: roleId,
+                                                            userId: userId
+                                                        };
+                                                        return kendo.stringify(list1);
+                                                    }
+                                                    // if(operation !== "read"){
+                                                    //     return kendo.stringify(options);
+                                                    // }
+                                                }
+                                            },
+                                            // serverPaging: true,    //设定服务器来实现分页功能
+                                            // serverFiltering: true,
+                                            // serverSorting: true,
+                                            filterable: true,
+                                            scrollable: true,
+                                            requestEnd: onRequestEnd1,
+                                            pageSize: 5,
+                                            schema: {
+                                                model: {
+                                                    id: "id",
+                                                    fields: {
+                                                        id: {editable: false, nullable: true},
+                                                        roleName: {type: "string"},
+                                                        description: {type: "string"},
+                                                        createDateTime: {
+                                                            type: "Date",
+                                                            editable: false,
+                                                            format: "{0:yyyy-MM-dd HH:mm:ss}"
+                                                        }
+                                                        // roleEntities : {defaultValue: { id: 1, name: ""}}
+                                                    }
+                                                },
+                                                // data: function (response) {
+                                                //     return JSON.parse(response).content;
+                                                // },
+                                                // total: function (response) {
+                                                //     return JSON.parse(response).total;
+                                                // }
+                                            }
+                                        });
+
+                                        //dataSource是必填属性
+                                        $("#roleList").kendoGrid({
+                                            dataSource: dataSource1,
+                                            height: 300,
+                                            groupable: true,
+                                            resizable: true,
+                                            requestEnd: onRequestEnd1,
+                                            sortable: true, //表示是否支持排序， boolean型
+                                            filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                                            // groupable: true,//表格标题
+                                            // scrollable: {//表示是否有下拉条，boolean型(虚拟分页)
+                                            //     virtual: true
+                                            // },
+                                            toolbar: "已绑定角色",
+                                            columnMenu: true,
+                                            pageable: {
+                                                // empty:"没有要显示的数据",
+                                                // //代表是否支持刷新
+                                                // refresh: true,
+                                                // //表示每页显示的记录数，默认为5,10,20
+                                                pageSizes: true,
+                                                // //表示显示的页数，5表示1,2,3,4,5
+                                                buttonCount: 5,
+                                                totalPages: true,
+                                                // input: true,//表示是否可以输入数字
+                                                refresh: true,
+                                                pageSize: 10,
+                                                pageSizes: [5, 10, 15, 20],
+                                                // numeric: true,
+                                                // input: true,
+                                                messages: {
+                                                    display: "显示 {0}-{1} 条，共 {2} 条",
+                                                    empty: "没有数据",
+                                                    itemsPerPage: "每页显示数量",
+                                                    first: "第一页",
+                                                    last: "最后一页",
+                                                    next: "下一页",
+                                                    previous: "上一页",
+                                                    page: "页",
+                                                    of: "共 {0}页"
+                                                }
+                                            },
+                                            columns: [
+                                                // {field: "rowNumber", title: "序号", width: 80,template: "<span class='row-number'></span>"},
+                                                {
+                                                    field: "roleName",
+                                                    title: "角色",
+                                                    width: 80,
+                                                    filterable: {multi: true, search: true}
+                                                },
+                                                {
+                                                    field: "description",
+                                                    title: "角色权限描述",
+                                                    width: 200,
+                                                    filterable: {multi: true, search: true}
+                                                },
+                                                // { field: "createDateTime",title: "创建时间",width: 120, filterable: { multi: true, search: true}, format: "{0:yyyy-MM-dd HH:mm:ss}" },
+                                                {
+                                                    command: [
+                                                        {
+                                                            name: "解绑", click: function (e) {
+                                                                var tr = $(e.target).closest("tr"); // get the current table row (tr)
+                                                                var data = this.dataItem(tr);
+                                                                var roleId = this.dataItem(tr).id;
+                                                                var list1 = {
+                                                                    userId: userId,
+                                                                    roleId: roleId
+                                                                };
+                                                                $.ajax({
+                                                                    type: "POST",
+                                                                    url: "./deleteRole",
+                                                                    data: kendo.stringify(list1),
+                                                                    contentType: "application/json; charset=utf-8",
+                                                                    dataType: "json",
+                                                                    success: function (data) {
+                                                                        var roleGrid = $("#roleList1").data("kendoGrid");
+                                                                        roleGrid.dataSource.read();
+                                                                        var roleGrid1 = $("#roleList").data("kendoGrid");
+                                                                        roleGrid1.dataSource.read();
+                                                                    }
+
+                                                                })
+                                                            }
+                                                        }],
+                                                    title: "操作",
+                                                    width: "80px"
+                                                }
+                                            ],
+                                            editable: {
+                                                mode: "popup",
+                                                window: {
+                                                    title: "用户角色管理"
+                                                }
+                                            }
+                                        });
+
+                                        var dataSource2 = new kendo.data.DataSource({
+                                            transport: {
+                                                read: {
+                                                    url: "./userUnRole?userId=" + userId
+                                                },
+
+                                                parameterMap: function (options, operation) {
+
+                                                    if (operation !== "read") {
+                                                        return kendo.stringify(options);
+                                                    }
+                                                }
+                                            },
+                                            // serverPaging: true,    //设定服务器来实现分页功能
+                                            // serverFiltering: true,
+                                            // serverSorting: true,
+                                            filterable: true,
+                                            scrollable: true,
+                                            requestEnd: onRequestEnd,
+                                            pageSize: 5,
+                                            schema: {
+                                                model: {
+                                                    id: "id",
+                                                    fields: {
+                                                        id: {editable: false, nullable: true},
+                                                        roleName: {type: "string"},
+                                                        description: {type: "string"},
+                                                        createDateTime: {
+                                                            type: "Date",
+                                                            editable: false,
+                                                            format: "{0:yyyy-MM-dd HH:mm:ss}"
+                                                        },
+                                                        // roleEntities : {defaultValue: { id: 1, name: ""}}
+                                                    }
+                                                },
+                                                // data: function (response) {
+                                                //     return JSON.parse(response).content;
+                                                // },
+                                                // total: function (response) {
+                                                //     return JSON.parse(response).total;
+                                                // }
+                                            }
+                                        });
+
+                                        //dataSource是必填属性
+                                        $("#roleList1").kendoGrid({
+                                            dataSource: dataSource2,
+                                            height: 300,
+                                            groupable: true,
+                                            resizable: true,
+                                            sortable: true, //表示是否支持排序， boolean型
+                                            filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                                            // groupable: true,//表格标题
+                                            // scrollable: {//表示是否有下拉条，boolean型(虚拟分页)
+                                            //     virtual: true
+                                            // },
+                                            toolbar: "可绑定角色",
+                                            columnMenu: true,
+                                            pageable: {
+                                                // empty:"没有要显示的数据",
+                                                // //代表是否支持刷新
+                                                // refresh: true,
+                                                // //表示每页显示的记录数，默认为5,10,20
+                                                pageSizes: true,
+                                                // //表示显示的页数，5表示1,2,3,4,5
+                                                buttonCount: 5,
+                                                totalPages: true,
+                                                // input: true,//表示是否可以输入数字
+                                                refresh: true,
+                                                pageSize: 5,
+                                                pageSizes: [5, 10, 15, 20],
+                                                // numeric: true,
+                                                // input: true,
+                                                messages: {
+                                                    display: "显示 {0}-{1} 条，共 {2} 条",
+                                                    empty: "没有数据",
+                                                    itemsPerPage: "每页显示数量",
+                                                    first: "第一页",
+                                                    last: "最后一页",
+                                                    next: "下一页",
+                                                    previous: "上一页",
+                                                    page: "页",
+                                                    of: "共 {0}页"
+                                                }
+                                            },
+                                            columns: [
+                                                // {field: "rowNumber", title: "序号", width: 80,template: "<span class='row-number'></span>"},
+                                                {
+                                                    field: "roleName",
+                                                    title: "角色",
+                                                    width: 80,
+                                                    filterable: {multi: true, search: true}
+                                                },
+                                                {
+                                                    field: "description",
+                                                    title: "角色权限描述",
+                                                    width: 200,
+                                                    filterable: {multi: true, search: true}
+                                                },
+                                                // { field: "createDateTime",title: "创建时间",width: 120, filterable: { multi: true, search: true}, format: "{0:yyyy-MM-dd HH:mm:ss}" },
+                                                {
+                                                    command: [
+                                                        {
+                                                            name: "绑定", click: function (e) {
+                                                                var tr = $(e.target).closest("tr"); // get the current table row (tr)
+                                                                var data = this.dataItem(tr);
+                                                                var roleId = this.dataItem(tr).id;
+                                                                var list1 = {
+                                                                    userId: userId,
+                                                                    roleId: roleId
+                                                                };
+                                                                $.ajax({
+                                                                    type: "POST",
+                                                                    url: "./userAddRole",
+                                                                    data: kendo.stringify(list1),
+                                                                    contentType: "application/json; charset=utf-8",
+                                                                    dataType: "json",
+                                                                    success: function (data) {
+                                                                        var roleGrid = $("#roleList1").data("kendoGrid");
+                                                                        roleGrid.dataSource.read();
+                                                                        var roleGrid1 = $("#roleList").data("kendoGrid");
+                                                                        roleGrid1.dataSource.read();
+                                                                    }
+
+                                                                })
+                                                            }
+                                                        }],
+                                                    title: "操作",
+                                                    width: "80px"
+                                                }
+                                            ],
+                                            editable: {
+                                                mode: "popup",
+                                                window: {
+                                                    title: "用户角色管理"
+                                                }
+                                            }
+                                        });
+
+                                    }
+                                }, {
+                                    name: "destroy", text: "删除"
+                                }],
+                            title: "操作",
+                            width: "200px"
+                        }
+                    ],
+                    editable: {
+                        mode: "popup",
+                        template: kendo.template($("#popup_editor").html()),
+                        window: {
+                            title: "用户管理"
+                        },
+                    },
+                    edit:function(e){
+                        $("#company1").kendoComboBox({
+                            autoBind: true,
+                            placeholder: "请选择...",
+                            dataTextField: "name",
+                            dataValueField: "name",
+                            filter: "contains",
+                            suggest: true,
+                            dataSource: {
+                                transport: {
+                                    read: {
+                                        type: "get",
+                                        url: "./allplace1",
+                                        dataType: "json",
+                                        contentType: "application/json",
+                                        headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                    }
+                                }
+                            }
+                        });
+                    },
+                });
+
+            }
+
+
+            //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+            function onRequestEnd(e) {
+                if (e.type == "create") {
+                    if(e.response == 0){
+                        alert("账号已存在，用户创建失败。")
+                    }else {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+
+                }
+                else if (e.type == "update") {
+                    if(e.response == 0){
+                        alert("账号已存在，用户更失败。")
+                    }else {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                }
+                else if (e.type == "destroy") {
+                    e.sender.read();
+                }
+
+                //更新成功后弹出提示信息
+                var response = e.response;
+                if (response) {
+                    var type = e.type;
+                    if (type != 'read') {
+                        var status = response.status;
+                        if (status == 200) {
+                            alert(1);
+                            this.read();
+                        }
+                        else {
+                            // alert(response.msg);
+                        }
+                    }
+                }
+            }
+
+            // function onClose() {
+            //     $("#roleList").empty();
+            //     $("#roleList1").empty();
+            // }
+            function onRequestEnd1(e) {
+                if (e.type == "create") {
+                    e.sender.read();       //调用read方法 重新读取表格
+                }
+                else if (e.type == "update") {
+                    e.sender.read();
+                }
+                else if (e.type == "destroy") {
+                    var roleGrid = $("#roleList1").data("kendoGrid");
+                    roleGrid.dataSource.read();
+                    var roleGrid1 = $("#roleList").data("kendoGrid");
+                    roleGrid1.dataSource.read();
+                }
+
+            }
+
+            function roleListDropDownEditor(container, options) {
+                // console.log(options.model);
+                var typeId = options.model.pName;
+                var input = $("company1");
+                input.appendTo(container);
+                input.kendoComboBox({
+                    autoBind: true,
+                    placeholder: "请选择...",
+                    dataTextField: "name",
+                    dataValueField: "name",
+                    value: typeId,
+                    filter: "contains",
+                    suggest: true,
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type: "get",
+                                url: "./allplace1",
+                                dataType: "json",
+                                contentType: "application/json",
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                            }
+                        }
+                    }
+                });
+            }
+
+            $(".product-preview").html();
+
+            //编辑时boolean类型复选框样式修改
+            function customBoolEditor(container, options) {
+                var guid = kendo.guid();
+                $('<input class="k-checkbox" id="' + guid + '" type="checkbox" name="' + options.field + '" data-type="boolean" data-bind="checked:' + options.field + '">').appendTo(container);
+                $('<label class="k-checkbox-label" for="' + guid + '">&#8203;</label>').appendTo(container);
+            }
+
+
+
+            /*]]>*/
+        </script>
+    </div>
+
+</div>
+</div>
+
+<!-- /.container -->
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

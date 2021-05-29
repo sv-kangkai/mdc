@@ -1,0 +1,773 @@
+<!--<!DOCTYPE HTML>-->
+<!--<html xmlns:th="http://www.thymeleaf.org">-->
+<!--<head th:replace="fragments/header::header-css">-->
+    <!--<title>场地方管理</title>-->
+<!--</head>-->
+<!--<body class="hold-transition skin-blue sidebar-mini">-->
+<!--<div th:replace="fragments/header::header-body"/>-->
+
+<!--<div class="content-wrapper">-->
+    <!--<section  class="content-header">-->
+        <!--<h1>-->
+            <!--场地方管理-->
+        <!--</h1>-->
+        <!--<br/>-->
+        <!--<ol class="breadcrumb">-->
+            <!--<li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>-->
+            <!--<li class="active">场地方管理</li>-->
+        <!--</ol>-->
+    <!--</section>-->
+
+    <!--<div class="container-fluid">-->
+
+        <!--<div id="grid"></div>-->
+        <!--<div id="window">-->
+            <!--<input name="file" id="file" type="file"/>-->
+        <!--</div>-->
+
+        <!--<script type="text/x-kendo-template" id="template">-->
+            <!--<div class="tabstrip">-->
+                <!--<ul>-->
+                    <!--<li class="k-state-active">-->
+
+                    <!--</li>-->
+                <!--</ul>-->
+                <!--<div>-->
+                    <!--<div class="orders1"></div>-->
+                    <!--<div class="orders2"></div>-->
+                    <!--<div class="orders3"></div>-->
+                <!--</div>-->
+
+            <!--</div>-->
+
+        <!--</script>-->
+
+        <!--<script>-->
+            <!--$(document).ready(function() {-->
+                <!--$("#file").kendoUpload({-->
+
+                <!--});-->
+                <!--$(".k-upload-empty").hide();-->
+
+                <!--var dataSource = new kendo.data.DataSource({-->
+                    <!--transport: {-->
+                        <!--read: {-->
+                            <!--url: "./getAllPlace"-->
+                        <!--},-->
+                        <!--create: {-->
+                            <!--url: "./insertPlace",-->
+                            <!--dataType: "json",-->
+                            <!--type: "post",-->
+                            <!--contentType:"application/json;charset=UTF-8"-->
+                        <!--},-->
+                        <!--destroy: {-->
+                            <!--url: "./deletePlace",-->
+                            <!--dataType: "json",-->
+                            <!--type: "post",-->
+                            <!--contentType:"application/json;charset=UTF-8"-->
+                        <!--},-->
+                        <!--update: {-->
+                            <!--url:  "./updatePlace",-->
+                            <!--dataType: "json",-->
+                            <!--type: "post",-->
+                            <!--contentType:"application/json;charset=UTF-8"-->
+                        <!--},-->
+                        <!--parameterMap:function(options, operation){-->
+                            <!--if (operation === "destroy") {-->
+                                <!--var placeId = options.id;-->
+                                <!--var list = {-->
+                                    <!--placeId:placeId-->
+                                <!--}-->
+                                <!--return kendo.stringify(list);-->
+                            <!--}-->
+                            <!--if(operation ==="create"){-->
+                                <!--console.log(options);-->
+                                <!--var endDate =options.endDateTime;-->
+                                <!--var startDate = options.startDateTime;-->
+                                <!--options.endDateTime=  kendo.toString(kendo.parseDate(endDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");-->
+                                <!--options.startDateTime=  kendo.toString(kendo.parseDate(startDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");-->
+                                <!--return kendo.stringify(options);-->
+                            <!--}-->
+                            <!--if(operation ==="update"){-->
+                                <!--console.log(options);-->
+                                <!--var endDate =options.endDateTime;-->
+                                <!--var startDate = options.startDateTime;-->
+
+                                <!--if(endDate.length!==19){-->
+                                    <!--options.endDateTime=  kendo.toString(kendo.parseDate(endDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");-->
+                                <!--}-->
+                                <!--if(startDate.length!==19){-->
+                                    <!--options.startDateTime=  kendo.toString(kendo.parseDate(startDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");-->
+                                <!--}-->
+
+                                <!--return kendo.stringify(options);-->
+                            <!--}-->
+                            <!--if(operation=="read"){-->
+                                <!--var page = $("#grid").data("kendoGrid").dataSource.page();-->
+                                <!--var pageSize = $("#grid").data("kendoGrid").dataSource.pageSize();-->
+                                <!--return {page:page,pageSize:pageSize};-->
+                            <!--}-->
+                        <!--}-->
+                    <!--},-->
+                    <!--serverPaging: true,    //设定服务器来实现分页功能-->
+                    <!--serverFiltering: false,-->
+                    <!--serverSorting: false,-->
+                    <!--requestEnd: onRequestEnd,-->
+                    <!--pageSize: 10,-->
+                    <!--schema: {-->
+                        <!--model: {-->
+                            <!--id: "id",-->
+                            <!--fields: {-->
+                                <!--id: {type: "number", editable: false},-->
+                                <!--name: {type: "string",-->
+                                    <!--validation: {-->
+                                        <!--required: true,-->
+                                        <!--required: {message: "场地名称为必填项！"}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--placeSn: {type: "string",-->
+                                    <!--validation: {-->
+                                        <!--required: true,-->
+                                        <!--required: {message: "场地编码为必填项！"}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--placeAddress: {type: "string",-->
+                                    <!--validation: {-->
+                                        <!--required: true,-->
+                                        <!--required: {message: "场地地址为必填项！"}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--startDateTime: {type: "timestamp",-->
+                                    <!--validation: {-->
+                                        <!--required: true,-->
+                                        <!--required: {message: "协议开始时间为必填项！"}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--endDateTime: {type: "timestamp",-->
+                                    <!--validation: {-->
+                                        <!--required: true,-->
+                                        <!--required: {message: "协议结束时间为必填项！"}-->
+                                    <!--}-->
+                                <!--},-->
+                                <!--levelFlag: {type: "number",editable: false},-->
+                                <!--levelFlagName: {type: "string",editable: false},-->
+                                <!--superiorId: {type: "string"},-->
+                                <!--superiorName: {type: "string"},-->
+                                <!--businessId:{type: "number"},-->
+                                <!--businessName: {type: "string"},-->
+                                <!--cityId:{type: "number"},-->
+                                <!--cityName:{type: "string"},-->
+                                <!--userId:{type:"string"},-->
+                                <!--userName:{type:"string"}-->
+                            <!--}-->
+                        <!--},-->
+                        <!--data: function (response) {-->
+                            <!--var list = JSON.parse(response).data;-->
+                            <!--return list;-->
+                        <!--},-->
+                        <!--total: function (response) {-->
+                            <!--return JSON.parse(response).total;-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+
+
+                <!--var element = $("#grid").kendoGrid({-->
+                    <!--dataSource: dataSource,-->
+                    <!--height: 600,-->
+                    <!--sortable: true, //表示是否支持排序， boolean型-->
+                    <!--filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型-->
+                    <!--groupable: true,//表格标题-->
+                    <!--detailTemplate: kendo.template($("#template").html()),-->
+                    <!--detailInit: detailInit,-->
+                    <!--toolbar: ["create"],-->
+                    <!--columnMenu: true,-->
+                    <!--resizable: true,-->
+                    <!--pageable: {-->
+                        <!--// empty:"没有要显示的数据",-->
+                        <!--// //代表是否支持刷新-->
+                        <!--// refresh: true,-->
+                        <!--// //表示每页显示的记录数，默认为5,10,20-->
+                        <!--pageSizes: true,-->
+                        <!--// //表示显示的页数，5表示1,2,3,4,5-->
+                        <!--buttonCount: 5,-->
+                        <!--totalPages: true,-->
+                        <!--// input: true,//表示是否可以输入数字-->
+                        <!--refresh: true,-->
+                        <!--pageSize: 5,-->
+                        <!--pageSizes: [5, 10, 15, 20],-->
+                        <!--numeric: true,-->
+                        <!--input: true,-->
+                        <!--messages: {-->
+                            <!--display: "显示 {0}-{1} 条，共 {2} 条",-->
+                            <!--empty: "没有数据",-->
+                            <!--itemsPerPage: "每页显示数量",-->
+                            <!--first: "第一页",-->
+                            <!--last: "最后一页",-->
+                            <!--next: "下一页",-->
+                            <!--previous: "上一页",-->
+                            <!--page: "页",-->
+                            <!--of: "共 {0}页"-->
+                        <!--}-->
+                    <!--},-->
+                    <!--columns: [-->
+                        <!--{-->
+                            <!--field: "name",-->
+                            <!--title: "场地名称",-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "placeSn",-->
+                            <!--title: "场地编码",-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "placeAddress",-->
+                            <!--title: "地址",-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "userId",-->
+                            <!--title: "场地负责人",-->
+                            <!--template:"#=userName#",-->
+                            <!--editor:chooseUser,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "startDateTime",-->
+                            <!--title: "协议开始时间",-->
+                            <!--format: "{0:yyyy-MM-dd HH:mm}",-->
+                            <!--editor: changeDate,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "endDateTime",-->
+                            <!--title: "协议结束时间",-->
+                            <!--format: "{0:yyyy-MM-dd HH:mm}",-->
+                            <!--editor: changeDate,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},{-->
+                            <!--field: "levelFlagName",-->
+                            <!--title: "隶属上级单位",-->
+                            <!--template:"#=levelFlagName#",-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "superiorId",-->
+                            <!--title: "隶属单位名称",-->
+                            <!--template:"#=superiorName#",-->
+                            <!--editor:roleListDropDownEditor,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "businessId",-->
+                            <!--title: "行业分类名称",-->
+                            <!--template:"#=businessName#",-->
+                            <!--editor:businessEditor,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "cityId",-->
+                            <!--title: "城市名称",-->
+                            <!--template:"#=cityName#",-->
+                            <!--editor:cityEditor,-->
+                            <!--attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--command: ["edit","destroy",-->
+                                <!--{-->
+                                    <!--text: "上传协议",//名称-->
+                                    <!--click: function (e) {-->
+                                        <!--// e.target 是表示按钮的DOM元素-->
+                                        <!--var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)-->
+                                        <!--// 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了-->
+                                        <!--var data = this.dataItem(tr);-->
+                                        <!--var placeId = data.id;-->
+                                        <!--var file = data.file;-->
+                                        <!--console.log(file);-->
+                                        <!--if(file!=""){-->
+                                            <!--return;-->
+                                        <!--}-->
+
+                                        <!--var myWindow = $("#window");-->
+                                        <!--myWindow.kendoWindow({-->
+                                            <!--width: "500px",-->
+                                            <!--height: "300px",-->
+                                            <!--title: "上传协议"-->
+                                        <!--});-->
+
+                                        <!--myWindow.data("kendoWindow").center().open();-->
+
+                                        <!--$(".k-upload-empty").show();-->
+
+                                        <!--$("#file").kendoUpload({-->
+                                            <!--async: {-->
+                                                <!--saveUrl: "/mc/file/upload",-->
+                                                <!--autoUpload: true-->
+                                            <!--},-->
+                                            <!--localization: {     //设置上传按钮名称-->
+                                                <!--select: "上传"-->
+                                            <!--},-->
+                                            <!--success: function(e){//上传成功后执行的回调函数-->
+                                                <!--var uploadpath = e.response.uploadpath;-->
+                                                <!--var fileName = e.response.fileName;-->
+
+                                                <!--$.ajax({-->
+                                                    <!--type:"post",-->
+                                                    <!--url:"/mc/placeMgr/saveFileToDB",-->
+                                                    <!--data:{-->
+                                                        <!--uploadpath:uploadpath,-->
+                                                        <!--placeId:placeId,-->
+                                                        <!--fileName:fileName-->
+                                                    <!--},-->
+                                                    <!--success:function(res){-->
+                                                        <!--// console.log(uploadpath);-->
+                                                        <!--myWindow.data("kendoWindow").close();-->
+                                                        <!--location.reload();-->
+                                                    <!--}-->
+                                                <!--})-->
+                                            <!--}-->
+                                        <!--});-->
+
+
+                                    <!--}-->
+                                <!--},-->
+                                <!--{-->
+                                    <!--text: "下载协议",//名称-->
+                                    <!--click: function (e) {-->
+                                        <!--// e.target 是表示按钮的DOM元素-->
+                                        <!--var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)-->
+                                        <!--// 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了-->
+                                        <!--var data = this.dataItem(tr);-->
+                                        <!--var placeId = data.id;-->
+                                        <!--var file = data.file;-->
+                                        <!--var fileName = data.fileName;-->
+                                        <!--console.log(file);-->
+
+                                        <!--$.ajax({-->
+                                            <!--type:"post",-->
+                                            <!--url:"/mc/file/download",-->
+                                            <!--data:{-->
+                                                <!--fileUrl:file,-->
+                                                <!--fileName:fileName-->
+                                            <!--},-->
+                                            <!--success:function(res){-->
+                                               <!--console.log(res);-->
+                                            <!--}-->
+                                        <!--})-->
+                                    <!--}-->
+                                <!--}-->
+
+
+                            <!--],-->
+                            <!--title: "操作",-->
+                            <!--width: "300px"-->
+                        <!--}-->
+                    <!--],-->
+                    <!--editable: {-->
+                        <!--mode: "popup",-->
+                        <!--window: {-->
+                            <!--title: "场地管理"-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+            <!--});-->
+
+            <!--//add tooltip-->
+            <!--$("#grid").kendoTooltip({-->
+                <!--show: function(e){-->
+                    <!--if($.trim(this.content.text()) !=""){-->
+                        <!--$('[role="tooltip"]').css("visibility", "visible");-->
+                    <!--}-->
+                <!--},-->
+                <!--hide: function(){-->
+                    <!--$('[role="tooltip"]').css("visibility", "hidden");-->
+                <!--},-->
+                <!--filter: "td:nth-child(n+3)",-->
+                <!--content: function(e){-->
+                    <!--var element = e.target[0];-->
+                    <!--if(element.offsetWidth < element.scrollWidth){-->
+                        <!--var text = $(e.target).text();-->
+                        <!--return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';-->
+                    <!--}else{-->
+                        <!--$('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块-->
+                        <!--return "";-->
+                    <!--}-->
+                <!--}-->
+            <!--}).data("kendoTooltip");-->
+
+            <!--function detailInit(e) {-->
+                <!--var detailRow = e.detailRow;-->
+                <!--var place_index2_Id = e.data.id;  //一级场地id-->
+
+                <!--detailRow.find(".tabstrip").kendoTabStrip({-->
+                    <!--animation: {-->
+                        <!--open: { effects: "fadeIn" }-->
+                    <!--}-->
+                <!--});-->
+                <!--detailRow.find(".orders1").kendoGrid({-->
+                    <!--dataSource: {-->
+                        <!--transport: {-->
+                            <!--read:{-->
+                                <!--url: "/mc/placeMgr/findPlaceByParentId?placeId="+place_index2_Id-->
+                            <!--},-->
+                            <!--create: {-->
+                                <!--url: "/mc/placeMgr/insertPlaceChild",-->
+                                <!--dataType: "json",-->
+                                <!--type: "post",-->
+                                <!--contentType:"application/json;charset=UTF-8"-->
+                            <!--},-->
+                            <!--destroy: {-->
+                                <!--url: "/mc/placeMgr/deletePlace",-->
+                                <!--dataType: "json",-->
+                                <!--type: "post",-->
+                                <!--contentType:"application/json;charset=UTF-8"-->
+                            <!--},-->
+                            <!--update: {-->
+                                <!--url:  "/mc/placeMgr/updatePlaceChild",-->
+                                <!--dataType: "json",-->
+                                <!--type: "post",-->
+                                <!--contentType:"application/json;charset=UTF-8"-->
+                            <!--},-->
+                            <!--parameterMap:function(options, operation){-->
+                                <!--if (operation === "destroy") {-->
+                                    <!--var placeId = options.id;-->
+                                    <!--var list = {-->
+                                        <!--placeId:placeId-->
+                                    <!--}-->
+                                    <!--return kendo.stringify(list);-->
+                                <!--}-->
+                                <!--if(operation ==="create"){-->
+                                    <!--options.pId =place_index2_Id;-->
+                                    <!--options.placeAddress = e.data.placeAddress;-->
+                                    <!--options.startDateTime = e.data.startDateTime;-->
+                                    <!--options.endDateTime = e.data.endDateTime;-->
+                                    <!--options.levelFlag = e.data.levelFlag;-->
+                                    <!--options.levelFlagName = e.data.levelFlagName;-->
+                                    <!--options.superiorId = e.data.superiorId;-->
+                                    <!--options.superiorName = e.data.superiorName;-->
+                                    <!--options.businessId = e.data.businessId;-->
+                                    <!--options.businessName = e.data.businessName;-->
+                                    <!--options.cityId = e.data.cityId;-->
+                                    <!--options.cityName = e.data.cityName;-->
+                                    <!--options.userId = e.data.userId;-->
+                                    <!--options.userName = e.data.userName;-->
+                                    <!--return kendo.stringify(options);-->
+                                <!--}-->
+                                <!--if(operation === "update"){-->
+                                    <!--options.pId =place_index2_Id;-->
+                                    <!--options.placeAddress = e.data.placeAddress;-->
+                                    <!--options.startDateTime = e.data.startDateTime;-->
+                                    <!--options.endDateTime = e.data.endDateTime;-->
+                                    <!--options.levelFlag = e.data.levelFlag;-->
+                                    <!--options.levelFlagName = e.data.levelFlagName;-->
+                                    <!--options.superiorId = e.data.superiorId;-->
+                                    <!--options.superiorName = e.data.superiorName;-->
+                                    <!--options.businessId = e.data.businessId;-->
+                                    <!--options.businessName = e.data.businessName;-->
+                                    <!--options.cityId = e.data.cityId;-->
+                                    <!--options.cityName = e.data.cityName;-->
+                                    <!--options.userId = e.data.userId;-->
+                                    <!--options.userName = e.data.userName;-->
+                                    <!--return kendo.stringify(options);-->
+                                <!--}-->
+
+                            <!--}-->
+                        <!--},-->
+                        <!--serverPaging: false,-->
+                        <!--serverSorting: true,-->
+                        <!--requestEnd: onRequestEnd,-->
+                        <!--serverFiltering: true,-->
+                        <!--pageSize: 7,-->
+                        <!--schema: {-->
+                            <!--model: {-->
+                                <!--id: "id",-->
+                                <!--fields: {-->
+                                    <!--id: {type: "number", editable: false},-->
+                                    <!--pId: {type: "number", nullable: true},-->
+                                    <!--name: {type: "string",-->
+                                        <!--validation: {-->
+                                            <!--required: true,-->
+                                            <!--required: {message: "场地名称为必填项！"}-->
+                                        <!--}-->
+                                    <!--},-->
+                                    <!--placeSn: {type: "string",-->
+                                        <!--validation: {-->
+                                            <!--required: true,-->
+                                            <!--required: {message: "场地编码为必填项！"}-->
+                                        <!--}-->
+                                    <!--}-->
+                                <!--}-->
+                            <!--},-->
+                            <!--data:function(response){-->
+                                <!--var list = JSON.parse(response);-->
+                                <!--for(var i=0;i<list.length;i++){-->
+                                    <!--var businessId = list[i].superiorId;-->
+                                    <!--var businessName = list[i].businessName;-->
+                                    <!--list[i].superiorId = businessId+"_"+businessName-->
+                                <!--}-->
+                                <!--return list;-->
+                            <!--}-->
+                        <!--}-->
+
+                    <!--},-->
+                    <!--detailTemplate: kendo.template($("#template").html()),-->
+                    <!--detailInit: detailInit,-->
+                    <!--toolbar: ["create"],-->
+                    <!--columnMenu: true,-->
+                    <!--resizable: true,-->
+                    <!--scrollable: false,-->
+                    <!--sortable: true,-->
+                    <!--columns: [-->
+                        <!--{-->
+                            <!--field: "name",-->
+                            <!--title: "场地名称",-->
+                            <!--headerAttributes: {-->
+                                <!--style: "display:none;"-->
+                            <!--}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--field: "placeSn",-->
+                            <!--title: "场地编码",-->
+                            <!--headerAttributes: {-->
+                                <!--style: "display:none;"-->
+                            <!--}-->
+                        <!--},-->
+                        <!--{-->
+                            <!--command: ["edit","destroy"],-->
+                            <!--// title: "操作",-->
+                            <!--width: "200px",-->
+                            <!--headerAttributes: {-->
+                                <!--style: "display:none;"-->
+                            <!--}-->
+                        <!--}-->
+                    <!--],-->
+                    <!--editable: {-->
+                        <!--mode: "popup",-->
+                        <!--window: {-->
+                            <!--title: "场地管理"-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+            <!--}-->
+
+            <!--function changeDate(container, options) {-->
+                <!--var input = $('<input name="' + options.field + '"/>');-->
+                <!--input.appendTo(container);-->
+                <!--input.kendoDateTimePicker({-->
+                    <!--format: "{0:yyyy-MM-dd HH:mm}"-->
+                <!--});-->
+            <!--}-->
+
+            <!--//行业分类下拉列表-->
+            <!--function businessEditor(container, options){-->
+                <!--var businessId = options.model.businessId;-->
+                <!--var businessName = options.model.businessName;-->
+
+                <!--var input = $('<input name="' + options.field + '"/>');-->
+                <!--input.appendTo(container);-->
+                <!--input.kendoComboBox({-->
+                    <!--autoBind: false,-->
+                    <!--placeholder: "请选择...",-->
+                    <!--dataTextField: "name",-->
+                    <!--dataValueField: "id",-->
+                    <!--value: businessId,-->
+                    <!--text:businessName,-->
+                    <!--filter: "contains",-->
+                    <!--suggest: true,-->
+                    <!--dataSource: {-->
+                        <!--transport: {-->
+                            <!--read: {-->
+                                <!--type: "get",-->
+                                <!--url: "/mc/bussinessMgr/allBusiness",-->
+                                <!--dataType: "json",-->
+                                <!--contentType: "application/json",-->
+                                <!--headers: {'Content-Type': 'application/x-www-form-urlencoded'}-->
+                            <!--}-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+            <!--}-->
+
+            <!--//城市下拉列表-->
+            <!--function cityEditor(container, options){-->
+                <!--var cityId = options.model.cityId;-->
+                <!--var cityName = options.model.cityName;-->
+
+                <!--var input = $('<input name="' + options.field + '"/>');-->
+                <!--input.appendTo(container);-->
+                <!--input.kendoComboBox({-->
+                    <!--autoBind: false,-->
+                    <!--placeholder: "请选择...",-->
+                    <!--dataTextField: "name",-->
+                    <!--dataValueField: "id",-->
+                    <!--value:cityId,-->
+                    <!--text:cityName,-->
+                    <!--filter: "contains",-->
+                    <!--suggest: true,-->
+                    <!--dataSource: {-->
+                        <!--transport: {-->
+                            <!--read: {-->
+                                <!--type: "get",-->
+                                <!--url: "/mc/allCity",-->
+                                <!--dataType: "json",-->
+                                <!--contentType: "application/json",-->
+                                <!--headers: {'Content-Type': 'application/x-www-form-urlencoded'}-->
+                            <!--}-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+            <!--}-->
+
+
+            <!--//隶属单位-->
+            <!--function roleListDropDownEditor(container, options) {-->
+                <!--var branchId = options.model.superiorId;-->
+                <!--var branchName = options.model.superiorName;-->
+
+                <!--var input = $('<input name="' + options.field + '"/>');-->
+                <!--input.appendTo(container);-->
+
+                <!--input.kendoComboBox({-->
+                    <!--autoBind: false,-->
+                    <!--placeholder: "请选择...",-->
+                    <!--dataTextField: "name",-->
+                    <!--dataValueField: "id",-->
+                    <!--value: branchId,-->
+                    <!--text:branchName,-->
+                    <!--filter: "contains",-->
+                    <!--suggest: true,-->
+                    <!--dataSource: {-->
+                        <!--transport: {-->
+                            <!--read: {-->
+                                <!--type: "get",-->
+                                <!--url: "/mc/branchMgr/allBranchAndHeadAndVendor",-->
+                                <!--dataType: "json",-->
+                                <!--contentType: "application/json",-->
+                                <!--headers: {'Content-Type': 'application/x-www-form-urlencoded'}-->
+                            <!--}-->
+                        <!--}-->
+                    <!--},-->
+                    <!--dataBound: function(e) {-->
+                        <!--console.log(e);-->
+                    <!--}-->
+                <!--});-->
+
+            <!--}-->
+
+
+            <!--//打开标记窗口时下拉列表展示-->
+            <!--function chooseUser(container, options) {-->
+                <!--var userId = options.model.userId;-->
+                <!--var userName = options.model.userName;-->
+
+                <!--var input = $('<input name="' + options.field + '"/>');-->
+                <!--input.appendTo(container);-->
+                <!--input.kendoComboBox({-->
+                    <!--autoBind: false,-->
+                    <!--placeholder: "请选择...",-->
+                    <!--dataTextField: "name",-->
+                    <!--dataValueField: "id",-->
+                    <!--value: userId,-->
+                    <!--text:userName,-->
+                    <!--filter: "contains",-->
+                    <!--suggest: true,-->
+                    <!--dataSource: {-->
+                        <!--transport: {-->
+                            <!--read: {-->
+                                <!--type: "get",-->
+                                <!--url: "/mc/branchMgr/findAllByStatus",-->
+                                <!--dataType: "json",-->
+                                <!--contentType: "application/json",-->
+                                <!--headers: {'Content-Type': 'application/x-www-form-urlencoded'}-->
+                            <!--}-->
+                        <!--}-->
+                    <!--}-->
+                <!--});-->
+            <!--}-->
+
+
+            <!--//（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改-->
+            <!--function onRequestEnd(e) {-->
+                <!--if (e.type == "create") {-->
+                    <!--e.sender.read();       //调用read方法 重新读取表格-->
+                <!--}-->
+                <!--else if (e.type == "update") {-->
+                    <!--e.sender.read();-->
+                <!--}-->
+                <!--else if (e.type == "destroy") {-->
+                    <!--e.sender.read();-->
+                <!--}-->
+
+                <!--//更新成功后弹出提示信息-->
+                <!--var response = e.response;-->
+                <!--if (response) {-->
+                    <!--var type = e.type;-->
+                    <!--if (type != 'read') {-->
+                        <!--var status = response.status;-->
+                        <!--if (status == 200) {this.read();}-->
+                        <!--else {-->
+                            <!--// alert(response.msg);-->
+                        <!--}-->
+                    <!--}-->
+                <!--}-->
+            <!--}-->
+
+        <!--</script>-->
+
+
+
+
+        <!--<style>-->
+            <!--.k-detail-cell .k-tabstrip .k-content {-->
+                <!--padding: 0.2em;-->
+            <!--}-->
+            <!--.employee-details ul-->
+            <!--{-->
+                <!--list-style:none;-->
+                <!--font-style:italic;-->
+                <!--margin: 15px;-->
+                <!--padding: 0;-->
+            <!--}-->
+            <!--.employee-details ul li-->
+            <!--{-->
+                <!--margin: 0;-->
+                <!--line-height: 1.7em;-->
+            <!--}-->
+
+            <!--.employee-details label-->
+            <!--{-->
+                <!--display:inline-block;-->
+                <!--width:90px;-->
+                <!--padding-right: 10px;-->
+                <!--text-align: right;-->
+                <!--font-style:normal;-->
+                <!--font-weight:bold;-->
+            <!--}-->
+        <!--</style>-->
+        <!--&lt;!&ndash;设置tooltip的样式&ndash;&gt;-->
+        <!--<style>-->
+            <!--div[role=tooltip].k-tooltip{-->
+                <!--padding: 2px;-->
+                <!--background: #5c9acf;-->
+            <!--}-->
+            <!--.k-tooltip-content{-->
+                <!--padding: 4px;-->
+                <!--text-align: left;-->
+                <!--background: #fff;-->
+                <!--color: #666;-->
+            <!--}-->
+            <!--.k-callout {-->
+                <!--border-bottom-color: #5c9acf;-->
+            <!--}-->
+        <!--</style>-->
+
+    <!--</div>-->
+<!--</div>-->
+<!--&lt;!&ndash; /.container &ndash;&gt;-->
+
+<!--<footer th:replace="fragments/footer::footer"/>-->
+
+<!--<aside th:replace="fragments/menu"/>-->
+<!--</body>-->
+<!--</html>-->

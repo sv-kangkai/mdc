@@ -1,0 +1,556 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+<head th:replace="fragments/header::header-css">
+    <title>Triangle Platform</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section th:replace="fragments/sitemap"/>
+
+    <section class="content-header">
+        <h1>
+            &nbsp;
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="#"><i class="fa fa-dashboard"></i>首页</a></li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-green"><i class="fa fa-check" aria-hidden="true"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">正常设备</span>
+                            <span class="info-box-number">
+                                <p style="font-size: 30px;">
+                                    <a href="#" target="_blank" id="nmoDevice">0</a>台
+                                </p>
+                            </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                    <div class="info-box">
+
+                        <span class="info-box-icon bg-yellow">
+                            <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                        </span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">故障设备</span>
+                            <span class="info-box-number">
+                                <p style="font-size: 30px;">
+                                    <a href="#" target="_blank" id="expDevice">0</a>台
+                                </p>
+                            </span>
+
+                            <div style="position: absolute; left:360px; top:3px;">
+                                <p style="font-size: 24px; color: lightgray;">
+                                    <i class="fa fa-refresh test" aria-hidden="true"></i>
+                                </p>
+                            </div>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+
+                <!-- fix for small devices only -->
+                <div class="clearfix visible-sm-block"></div>
+
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                    <div class="info-box">
+                        <span class="info-box-icon bg-green"><i class="fa fa-jpy" aria-hidden="true"></i></span>
+                        <div class="info-box-content">
+                            <span class="info-box-text">今日收入</span>
+                            <span class="info-box-number">
+                                <p style="font-size: 30px;">
+                                <a href="#" target="_blank" id="yedInc">0.00</a>元
+                                </p>
+                            </span>
+                        </div>
+                        <!-- /.info-box-content -->
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+                <div class="col-md-3 col-sm-6 col-xs-12">
+                    <div class="info-box">
+
+                        <span class="info-box-icon bg-navy"><i class="ion ion-ios-people-outline"></i></span>
+
+                        <div class="info-box-content">
+                            <span class="info-box-text">今日订单</span>
+                            <span class="info-box-number">
+                                <p style="font-size: 30px;">
+                                <a href="/mc/orderMgr/turnToOrderMgrByYesterday"  id="orderCount">2000</a>单
+                                </p>
+                            </span>
+                        </div>
+                        <!-- /.info-box-content -->
+
+                    </div>
+                    <!-- /.info-box -->
+                </div>
+                <!-- /.col -->
+            </div>
+            <!--<div class="row">-->
+                <!--<div class="col-md-12">-->
+                    <!--<div class="box collapsed-box">-->
+                        <!--<div class="box-header with-border">-->
+                            <!--<h3 class="box-title">上周收入来源统计</h3>-->
+
+                            <!--<div class="box-tools pull-right">-->
+                                <!--<button type="button" class="btn btn-box-tool" data-widget="collapse"><i-->
+                                        <!--class="fa fa-plus"></i>-->
+                                <!--</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; /.box-header &ndash;&gt;-->
+                        <!--<div class="box-body">-->
+                            <!--<div class="row">-->
+                                <!--<div class="col-md-12">-->
+                                    <!--<div id="recently3MonthIncome" style="width: 100%;height:400px;"></div>-->
+                                    <!--&lt;!&ndash; /.chart-responsive &ndash;&gt;-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--&lt;!&ndash; /.row &ndash;&gt;-->
+                        <!--</div>-->
+                    <!--</div>-->
+                    <!--&lt;!&ndash; /.box &ndash;&gt;-->
+                <!--</div>-->
+            <!--</div>-->
+            <!--<div class="row">-->
+                <!--<div class="col-md-6">-->
+                    <!--<div class="box collapsed-box">-->
+                        <!--<div class="box-header with-border">-->
+                            <!--<h3 class="box-title">昨日设备运行情况统计图</h3>-->
+
+                            <!--<div class="box-tools pull-right">-->
+                                <!--<button type="button" class="btn btn-box-tool" data-widget="collapse"><i-->
+                                        <!--class="fa fa-minus"></i>-->
+                                <!--</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; /.box-header &ndash;&gt;-->
+                        <!--<div class="box-body">-->
+                            <!--<div class="row">-->
+                                <!--<div class="col-md-12">-->
+                                    <!--<div id="yesterdayDeviceStatus" style="width: 100%;height:400px;"></div>-->
+                                    <!--&lt;!&ndash; /.chart-responsive &ndash;&gt;-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--&lt;!&ndash; /.row &ndash;&gt;-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; ./box-body &ndash;&gt;-->
+                    <!--</div>-->
+                    <!--&lt;!&ndash; /.box &ndash;&gt;-->
+                <!--</div>-->
+                <!--<div class="col-md-6">-->
+                    <!--<div class="box collapsed-box">-->
+                        <!--<div class="box-header with-border">-->
+                            <!--<h3 class="box-title">近6个月运营概况</h3>-->
+
+                            <!--<div class="box-tools pull-right">-->
+                                <!--<button type="button" class="btn btn-box-tool" data-widget="collapse"><i-->
+                                        <!--class="fa fa-minus"></i>-->
+                                <!--</button>-->
+                            <!--</div>-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; /.box-header &ndash;&gt;-->
+                        <!--<div class="box-body">-->
+                            <!--<div class="row">-->
+                                <!--<div class="col-md-12">-->
+                                    <!--<div id="recently3Month" style="width: 100%;height:400px;"></div>-->
+                                <!--</div>-->
+                            <!--</div>-->
+                            <!--&lt;!&ndash; /.row &ndash;&gt;-->
+                        <!--</div>-->
+                        <!--&lt;!&ndash; ./box-body &ndash;&gt;-->
+                    <!--</div>-->
+                    <!--&lt;!&ndash; /.box &ndash;&gt;-->
+                <!--</div>-->
+            <!--</div>-->
+        </div>
+    </section>
+</div>
+<!-- /.container -->
+<style type="text/css">
+    .test:hover {
+        cursor: pointer;
+        -webkit-transform: rotate(360deg);
+        transform: rotate(360deg);
+        -webkit-transition: -webkit-transform 1s linear;
+        transition: transform 1s linear;
+    }
+</style>
+<script type="text/javascript">
+    // //柱状图
+    // var myChart1 = echarts.init(document.getElementById('recently3Month'));
+    // option1 = {
+    //     title: {
+    //         text: ''
+    //     },
+    //     tooltip: {
+    //         trigger: 'axis'
+    //     },
+    //     legend: {
+    //         data: ['收入', '利润']
+    //     },
+    //     toolbox: {
+    //         show: false,
+    //         feature: {
+    //             mark: {show: true},
+    //             dataView: {show: false},
+    //             restore: {show: false},
+    //             saveAsImage: {show: false}
+    //         }
+    //     },
+    //     calculable: true,
+    //     xAxis: [
+    //         {
+    //             type: 'category',
+    //             data: ['1月', '2月', '3月', '4月', '5月', '6月']
+    //         }
+    //     ],
+    //     yAxis: [
+    //         {
+    //             type: 'value'
+    //         }
+    //     ],
+    //     series: [
+    //         {
+    //             name: '收入',
+    //             type: 'bar',
+    //             data: [3.66, 4.88, 2.65, 7.76, 2.01, 4.29],
+    //             markLine: {
+    //                 data: [
+    //                     {type: 'average', name: '平均值'}
+    //                 ]
+    //             }
+    //         },
+    //         {
+    //             name: '利润',
+    //             type: 'bar',
+    //             data: [1.33, 2.66, 0.34, 2.6, 0.9, 1.11],
+    //             markLine: {
+    //                 data: [
+    //                     {type: 'average', name: '平均值'}
+    //                 ]
+    //             }
+    //         }
+    //     ]
+    // };
+    //
+    // myChart1.setOption(option1);
+    //
+    // //饼图
+    // var myChart2 = echarts.init(document.getElementById('yesterdayDeviceStatus'));
+    // var idx = 1;
+    // option2 = {
+    //     timeline: {
+    //         data: [
+    //             '7:00', '8:00', '9:00', '10:00', '11:00',
+    //             '12:00',
+    //             '13:00', '14:00', '15:00', '16:00', '17:00',
+    //             '18:00'
+    //         ],
+    //         autoPlay: 'true',
+    //         axisType: 'category'
+    //     },
+    //     options: [
+    //         {
+    //             tooltip: {
+    //                 trigger: 'item',
+    //                 formatter: "{a} <br/>{b} : {c} ({d}%)"
+    //             },
+    //             legend: {
+    //                 data: ['按摩', '充电', '闲置', '故障']
+    //             },
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     center: ['50%', '45%'],
+    //                     radius: '50%',
+    //                     data: [
+    //                         {value: idx * 128 + 80, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 80, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 400, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 500, name: '按摩'},
+    //                         {value: idx * 64 + 400, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 400, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 1000, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 300, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 10, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 800, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 400, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 600, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 900, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         },
+    //         {
+    //             series: [
+    //                 {
+    //                     name: '日统计图',
+    //                     type: 'pie',
+    //                     data: [
+    //                         {value: idx * 128 + 350, name: '按摩'},
+    //                         {value: idx * 64 + 160, name: '充电'},
+    //                         {value: idx * 32 + 320, name: '闲置'},
+    //                         {value: idx++ * 16 + 640, name: '故障'}
+    //                     ]
+    //                 }
+    //             ]
+    //         }
+    //     ]
+    // };
+    // myChart2.setOption(option2);
+    //
+    // //上周收入来源统计
+    // var myChart3 = echarts.init(document.getElementById('recently3MonthIncome'));
+    //
+    // option3 = {
+    //     tooltip: {
+    //         trigger: 'axis',
+    //         axisPointer: {
+    //             type: 'cross',
+    //             label: {
+    //                 backgroundColor: '#6a7985'
+    //             }
+    //         }
+    //     },
+    //     legend: {
+    //         data: ['医疗机构', '教育学校', '娱乐休闲', '机场火车站', '写字楼']
+    //     },
+    //     grid: {
+    //         left: '3%',
+    //         right: '4%',
+    //         bottom: '3%',
+    //         containLabel: true
+    //     },
+    //     xAxis: [
+    //         {
+    //             type: 'category',
+    //             boundaryGap: false,
+    //             data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+    //         }
+    //     ],
+    //     yAxis: [
+    //         {
+    //             type: 'value'
+    //         }
+    //     ],
+    //     series: [
+    //         {
+    //             name: '医疗机构',
+    //             type: 'line',
+    //             stack: '总量',
+    //             areaStyle: {normal: {}},
+    //             data: [120, 132, 101, 134, 90, 230, 210]
+    //         },
+    //         {
+    //             name: '教育学校',
+    //             type: 'line',
+    //             stack: '总量',
+    //             areaStyle: {normal: {}},
+    //             data: [220, 182, 191, 234, 290, 330, 310]
+    //         },
+    //         {
+    //             name: '娱乐休闲',
+    //             type: 'line',
+    //             stack: '总量',
+    //             areaStyle: {normal: {}},
+    //             data: [150, 232, 201, 154, 190, 330, 410]
+    //         },
+    //         {
+    //             name: '机场火车站',
+    //             type: 'line',
+    //             stack: '总量',
+    //             areaStyle: {normal: {}},
+    //             data: [320, 332, 301, 334, 390, 330, 320]
+    //         },
+    //         {
+    //             name: '写字楼',
+    //             type: 'line',
+    //             stack: '总量',
+    //             // label: {
+    //             //     normal: {
+    //             //         show: true,
+    //             //         position: 'top'
+    //             //     }
+    //             // },
+    //             areaStyle: {normal: {}},
+    //             data: [820, 932, 901, 934, 1290, 1330, 1320]
+    //         }
+    //     ]
+    // };
+    // myChart3.setOption(option3);
+
+
+    $(document).ready(function () {
+        //获取昨日的订单数
+       /* $.get("./getYesterdayOrderCount", function (result) {
+            $("#orderCount").text(result);
+        });*/
+        $.get("./getCount", function (result) {
+           console.log(result)
+
+            $("#nmoDevice").text(result.nmoDevice) //正常设备
+            if (result.yedInc!=null) {
+            $("#yedInc").text(result.yedInc) //昨天收入
+            }
+            $("#expDevice").text( result.expDevice) //异常设备
+            $("#orderCount").text(result.yedOrder);  //昨日订单数
+        });
+
+    });
+</script>
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

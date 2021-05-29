@@ -1,0 +1,545 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>大区管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section  class="content-header">
+        <h1>
+            大区管理
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="/mc/index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">大区管理</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+
+        <div class="container-fluid">
+            <div id="grid"></div>
+            <script type="text/x-kendo-template" id="template">
+                <div class="tabstrip">
+                    <ul>
+                        <li class="k-state-active">
+
+                        </li>
+                    </ul>
+                    <div>
+                        <div class="orders1"></div>
+                        <div class="orders2"></div>
+                        <div class="orders3"></div>
+                    </div>
+
+                </div>
+
+            </script>
+
+            <script id="popup_editor" type="text/x-kendo-template">
+                <div class="k-edit-label"><label for="name"><span style="color:red;">* </span>地区管理</label></div>
+                <div data-container-for="name" class="k-edit-field"><input type="text" class="k-input k-textbox" name="name" data-bind="value:name"></div>
+            </script>
+
+            <script id="province1" type="text/x-kendo-template">
+                <div class="k-edit-label"><label for="name"><span style="color:red;">* </span>省</label></div>
+                <div data-container-for="name" class="k-edit-field">
+                    <input id="pro" data-role="combobox" data-bind="value:name" required="required" data-required-msg="请选择场地"/>
+                </div>
+            </script>
+
+
+
+
+            <script>
+                /*<![CDATA[*/
+                $(function () {loadUserList();});
+
+                //初始化表格数据
+                function loadUserList() {
+
+                    var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "./bussinessMgr/getRegion"
+                            },
+                            create: {
+                                url: "./bussinessMgr/createArea",
+                                contentType:"application/json;charset=UTF-8",
+                                type: "post"
+                            },
+                            destroy: {
+                                url: "./bussinessMgr/deleteArea",
+                                contentType:"application/json;charset=UTF-8",
+                                type: "post"
+                            },
+                            update: {
+                                url:  "./bussinessMgr/updateArea",
+                                contentType:"application/json;charset=UTF-8",
+                                type: "post"
+                            },
+                            parameterMap:function(options, operation){
+
+                                if(operation ==="create"){
+
+                                    console.log(options);
+
+                                    return kendo.stringify(options);
+                                }
+                                if(operation === "update"){
+                                    return kendo.stringify(options);
+                                }
+                                if(operation === "destroy"){
+                                    return kendo.stringify(options);
+                                }
+                            }
+                        },
+                        pageSize :10,
+                        serverPaging: false,
+                        serverSorting: false,
+                        serverFiltering: false,
+                        requestEnd: onRequestEnd,
+
+                        schema: {
+                            model: {
+                                id: "id",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    privinceEntity:{defaultValue: { id: 1, name: ""}}
+                                }
+                            },
+                            data: function (response) {
+                                return response;
+                            }
+
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true
+                    });
+
+                    //dataSource是必填属性
+                    $("#grid").kendoGrid({
+                        dataSource: dataSource,
+                        height: 600,
+                        sortable: true,
+                        pageable: true,
+                        groupable:true,
+                        //detailTemplate: kendo.template($("#template").html()),
+                        detailInit: detailInit,
+                        toolbar: [{name: "create", text: "新增"}],
+                        columns: [
+                            {
+                                field: "name",
+                                title: "地区管理"
+                            },  {
+                                command: [
+                                    {
+                                        name: "edit", text: "编辑"
+                                    }, {
+                                        name: "destroy", text: "删除"
+                                    }
+                                ],
+                                title: "操作",
+                                width: "250px"
+                            }
+                        ],
+                        editable: {
+                            mode: "popup",
+                            template: kendo.template($("#popup_editor").html()),
+                            window: {
+                                title: "地区"
+                            }
+                        }
+                    });
+
+//================================================================================
+
+
+                }
+
+                function detailInit(e) {
+                    var e=e;
+                    var id=e.data.id;
+                    var detailRow = e.detailRow;
+                    detailRow.find(".tabstrip").kendoTabStrip({
+                        animation: {
+                            open: { effects: "fadeIn" }
+                        }
+                    });
+
+
+                    $("<div/>").appendTo(e.detailCell).kendoGrid({
+
+
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: "./bussinessMgr/getProvince?id="+id,
+                                create: {
+                                    url: "./bussinessMgr/createProvince",
+                                    dataType: "json",
+                                    type: "post",
+                                    contentType:"application/json;charset=UTF-8"
+                                },
+                                destroy: {
+                                    url: "./bussinessMgr/removeProvince",
+                                    dataType: "json",
+                                    type: "post",
+                                    contentType:"application/json;charset=UTF-8"
+
+                                },
+
+                                parameterMap:function(options, operation){
+
+                                    if(operation ==="create"){
+                                        options.name.areaId=id;
+                                        console.log(options);
+
+                                  return kendo.stringify(options.name);
+                                    }
+
+                                    if(operation === "destroy"){
+                                        return kendo.stringify(options);
+                                    }
+                                }
+
+                            },
+                            serverPaging: false,
+                            serverSorting: true,
+                            serverFiltering: true,
+                            requestEnd: onRequestEnd,
+                            pageSize: 10,
+                            schema: {
+                                model: {
+                                    id: "id",
+
+                                    fields: {
+                                        id: {type: "number", editable: false}
+
+                                    }
+                                },
+                                data: function (response) {
+                                    // response.parentId=id;
+                                    return response;
+                                }
+
+                            }
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true,
+                        toolbar: [ "create"],
+                        columns: [
+                            { field: "name" ,
+                                title: "省:",
+                                width: "110px",
+                                //template:"#=provinceEntity.name#",
+                                editor:deviceEditor
+                            },{
+                                command: [
+
+                                     {
+                                        name: "destroy", text: "删除"
+                                    }
+                                ],
+                                title: "操作",
+                                width: "250px"
+                            }
+
+
+                        ],
+                        editable: {
+                            mode: "popup",
+                            template: kendo.template($("#province1").html()),
+                            window: {
+                                title: "省"
+                            }
+                        },edit:function(e){
+                            $("#pro").kendoComboBox({
+
+                                autoBind: false,
+                                placeholder: "请选择...",
+                                dataTextField: "name",
+                                dataValueField: "id",
+                                value: e.model.id,
+                                dataSource: {
+                                    transport: {
+                                        read: {
+                                            type: "get",
+                                            url: "./bussinessMgr/allProvince",
+                                            dataType: "json",
+                                            contentType: "application/json",
+                                            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                        }
+                                    }
+                                }
+                            });
+
+
+
+
+
+
+                        },
+                        schema: {
+                            model: {
+                                id: "id",
+                                // parentId:"parentId",
+                                fields: {
+                                    id: {type: "number", editable: false}
+                                    // parentId:{type: "number",nullable: true}
+                                },
+
+                            },
+                            data: function (response) {
+                                return response;
+                            }
+
+                        },
+
+
+                        detailInit: detailInit2,
+
+                    });
+                }
+
+
+                function deviceEditor(container, options){
+                   console.log(options);
+                    var areaId = options.id;
+
+                    var input = $('<input required name="' + options.field + '"/>');
+                    input.appendTo(container);
+
+                    input.kendoComboBox({
+
+                        autoBind: false,
+                        placeholder: "请选择...",
+                        dataTextField: "name",
+                        dataValueField: "id",
+                        value: areaId,
+                        dataSource: {
+                            transport: {
+                                read: {
+                                    type: "get",
+                                    url: "./bussinessMgr/allProvince",
+                                    dataType: "json",
+                                    contentType: "application/json",
+                                    headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                }
+                            }
+                        }
+                    });
+
+
+
+
+
+                }
+
+
+
+
+                //市
+
+                function detailInit2(e) {
+                    var e=e;
+                    var id=e.data.id;
+                    var detailRow = e.detailRow;
+                    detailRow.find(".tabstrip").kendoTabStrip({
+
+                    });
+
+
+                    $("<div/>").appendTo(e.detailCell).kendoGrid({
+
+
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: "./bussinessMgr/getCity?id="+id,
+                                create: {
+                                    url: "./bussinessMgr/createBusiness2",
+                                    dataType: "json",
+                                    type: "post",
+                                    contentType:"application/json;charset=UTF-8"
+                                },
+
+                                parameterMap:function(options, operation){
+
+                                    if(operation ==="create"){
+                                        options.parentId =id;
+                                        console.log(options);
+
+                                        return kendo.stringify(options);
+                                    }
+                                    if(operation === "update"){
+                                        return kendo.stringify(options);
+                                    }
+                                    if(operation === "destroy"){
+                                        return kendo.stringify(options);
+                                    }
+                                }
+
+                            },
+                            serverPaging: false,
+                            serverSorting: true,
+                            serverFiltering: true,
+                            requestEnd: onRequestEnd,
+                            pageSize: 10,
+                            schema: {
+                                model: {
+                                    id: "id",
+
+                                    fields: {
+                                        id: {type: "number", editable: false}
+
+                                    }
+                                },
+                                data: function (response) {
+                                    // response.parentId=id;
+                                    return response;
+                                }
+
+                            }
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true,
+
+                        columns: [
+                            { field: "name" ,title: "市:", width: "110px" },
+
+
+                        ],
+                        schema: {
+                            model: {
+                                id: "id",
+                                parentId:"parentId",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    parentId:{type: "number",nullable: true}
+                                },
+
+                            },
+                            data: function (response) {
+                                return response;
+                            }
+
+                        },
+
+                        //detailTemplate: kendo.template($("#template").html()),
+
+
+                    });
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                function changeDate(container, options) {
+                    var input = $('<input name="' + options.field + '"/>');
+                    input.appendTo(container);
+                    input.kendoDateTimePicker({
+                        format: "{0:yyyy-MM-dd HH:mm}"
+                    });
+                }
+
+                //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+                function onRequestEnd(e) {
+                    if (e.type == "create") {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                    else if (e.type == "update") {
+                        e.sender.read();
+                    }
+                    else if (e.type == "destroy") {
+                        e.sender.read();
+                    }
+
+                    //更新成功后弹出提示信息
+                    var response = e.response;
+                    if (response) {
+                        var type = e.type;
+                        if (type != 'read') {
+                            var status = response.status;
+                            if (status == 200) {this.read();}
+                            else {
+                                // alert(response.msg);
+                            }
+                        }
+                    }
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            </script>
+
+
+        </div>
+
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

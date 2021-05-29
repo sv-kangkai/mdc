@@ -1,0 +1,357 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>今日订单查询</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+
+    <section  class="content-header">
+        <h1>
+            今日订单查询
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">今日订单查询</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+
+        <!--<div id="window">-->
+            <!--<textarea id="textarea" style="width:400px;height: 250px" rows="4" hidden="true"></textarea>-->
+            <!--&lt;!&ndash;<a id="btn" class="k-primary" hidden="true">提交</a>&ndash;&gt;-->
+            <!--<button id="btn" type="button" >提交</button>-->
+        <!--</div>-->
+
+        <div class="container-fluid">
+            <div id="grid"></div>
+            <script>
+                /*<![CDATA[*/
+                $(function () {
+                    loadUserList();
+                    // $("#btn").kendoButton({
+                    //
+                    // });
+                    // $("#btn").hide();
+                });
+
+                //初始化表格数据
+                function loadUserList() {
+
+                    var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "./allOrderYesterday"
+                            }
+                        },
+                        serverPaging: true,    //设定服务器来实现分页功能
+                        serverFiltering: false,
+                        serverSorting: false,
+                        pageSize: 10,
+                        requestEnd: onRequestEnd,
+                        schema: {
+                            model: {
+                                id: "id",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    code: {type: "string"},
+                                    codeWx: {type: "string"},
+                                    orderSource: {type: "string"},
+                                    statusName:{type:"string"},
+                                    createDateTime: {type: "timestamp"},
+                                    payDateTime: {type: "timestamp"},
+                                    money: {type: "number"},
+                                    mcStartDateTime: {type: "timestamp"},
+                                    mcEndDateTime: {type: "timestamp"},
+                                    mcStatus: {type: "int"},
+                                    deviceId: {type: "int"},
+                                    deviceSn:{type:"string"},
+                                    mcTime: {type: "number"},
+                                    description:{type:"string"},
+                                    cancelReason:{type:"string"}
+                                }
+                            },
+                            data: function (response) {
+                                var list = JSON.parse(response).data;
+                                return list;
+                                // return response.data;
+                            },
+                            total: function (response) {
+                                // console.log(response.total);
+                                // return response.total;
+
+                                return JSON.parse(response).total;
+                            }
+                        }
+                    });
+
+                    //dataSource是必填属性
+                    $("#grid").kendoGrid({
+                        dataSource: dataSource,
+                        height: 600,
+                        sortable: true, //表示是否支持排序， boolean型
+                        filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                        groupable: true,//表格标题
+                        resizable: true,
+                        columnMenu: true,
+                        pageable: {
+                            // empty:"没有要显示的数据",
+                            // //代表是否支持刷新
+                            // refresh: true,
+                            // //表示每页显示的记录数，默认为5,10,20
+                            pageSizes: true,
+                            // //表示显示的页数，5表示1,2,3,4,5
+                            buttonCount: 5,
+                            totalPages: true,
+                            // input: true,//表示是否可以输入数字
+                            refresh: true,
+                            pageSize: 5,
+                            pageSizes: [5, 10, 15, 20],
+                            numeric: true,
+                            input: true,
+                            messages: {
+                                display: "显示 {0}-{1} 条，共 {2} 条",
+                                empty: "没有数据",
+                                itemsPerPage: "每页显示数量",
+                                first: "第一页",
+                                last: "最后一页",
+                                next: "下一页",
+                                previous: "上一页",
+                                page: "页",
+                                of: "共 {0}页"
+                            }
+                        },
+                        columns: [
+                            {
+                                field: "orderSource",
+                                title: "来源",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "id",
+                                title: "订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "code",
+                                title: "系统订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "codeWx",
+                                title: "外部订单号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "statusName",
+                                title: "订单状态",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "createDateTime",
+                                title: "订单创建时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "payDateTime",
+                                title: "订单支付时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "money",
+                                title: "订单金额(￥)",
+                                format: "{0:n2}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;text-align:right"}
+                            },
+                            {
+                                field: "mcStartDateTime",
+                                title: "开始按摩时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "mcEndDateTime",
+                                title: "结束按摩时间",
+                                format: "{0:yyyy-MM-dd HH:mm:ss}",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            // {
+                            //     field: "mcStatus",
+                            //     title: "按摩椅状态"
+                            // },
+                            // {
+                            //     field: "deviceId",
+                            //     title: "设备资产编码",
+                            //     attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            // },
+                            {
+                                field: "deviceSn",
+                                title: "设备编号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "mcTime",
+                                title: "按摩时长(分钟)",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;text-align:right"}
+                            },
+                            {
+                                field: "description",
+                                title: "取消订单原因",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "cancelReason",
+                                title: "备注",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }
+                            // {
+                            //     command: [
+                            //         {
+                            //             text:"添加备注",//名称
+                            //             click:function (e) {
+                            //                 // e.target 是表示按钮的DOM元素
+                            //                 var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                            //                 // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                            //                 var data = this.dataItem(tr);
+                            //                 var oldText = data.cancelReason;
+                            //                 var orderId = data.id;
+                            //
+                            //                 var detailWindow = $("<div id='window'><textarea id='textarea' style='width:400px;height: 250px' rows='4'></textarea><button id='btn' type='button'>提交</button></div>");
+                            //                 $("body").append(detailWindow);
+                            //
+                            //                 var myWindow = $("#window");
+                            //                 myWindow.kendoWindow({
+                            //                     width: "500px",
+                            //                     height:"300px",
+                            //                     title: "添加备注",
+                            //                     close: function () {
+                            //                         myWindow.data("kendoWindow").destroy();
+                            //                     }
+                            //                 });
+                            //
+                            //                 myWindow.data("kendoWindow").center().open();
+                            //
+                            //                 $("#textarea").val(oldText);
+                            //
+                            //
+                            //                 $("#btn").kendoButton({
+                            //                     click: function(){
+                            //
+                            //                         var text = $("#textarea").val();
+                            //
+                            //                         $.ajax({
+                            //                             type:"post",
+                            //                             url:"../orderMgr/addOrderDescription",
+                            //                             data:{
+                            //                                 orderId:orderId,
+                            //                                 description:text
+                            //                             },
+                            //                             success:function(res){
+                            //                                 myWindow.data("kendoWindow").close();
+                            //                                 $("#textarea").hide();
+                            //                                 $("#textarea").val("");
+                            //                                 // var grid = $("#grid").data("kendoGrid");
+                            //                                 // grid.dataSource.read();
+                            //                                 location.reload();
+                            //                             }
+                            //                         })
+                            //                     }
+                            //                 });
+                            //
+                            //             }
+                            //         }],
+                            //     title: "操作",
+                            //     width: "100px"
+                            // }
+                        ]
+                    });
+                }
+
+
+                //add tooltip
+                $("#grid").kendoTooltip({
+                    show: function(e){
+                        if($.trim(this.content.text()) !=""){
+                            $('[role="tooltip"]').css("visibility", "visible");
+                        }
+                    },
+                    hide: function(){
+                        $('[role="tooltip"]').css("visibility", "hidden");
+                    },
+                    filter: "td:nth-child(n+3)",
+                    content: function(e){
+                        var element = e.target[0];
+                        if(element.offsetWidth < element.scrollWidth){
+                            var text = $(e.target).text();
+                            return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';
+                        }else{
+                            $('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块
+                            return "";
+                        }
+                    }
+                }).data("kendoTooltip");
+
+
+                //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+                function onRequestEnd(e) {
+                    if (e.type == "create") {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                    else if (e.type == "update") {
+                        e.sender.read();
+                    }
+                    else if (e.type == "destroy") {
+                        e.sender.read();
+                    }
+
+                    //更新成功后弹出提示信息
+                    var response = e.response;
+                    if (response) {
+                        var type = e.type;
+                        if (type != 'read') {
+                            var status = response.status;
+                            if (status == 200) {this.read();}
+                            else {
+                                // alert(response.msg);
+                            }
+                        }
+                    }
+                    // else{
+                    //     alert("服务器异常，请重试！");
+                    // }
+                }
+
+                /*]]>*/
+            </script>
+
+            <!--设置tooltip的样式-->
+            <style>
+                div[role=tooltip].k-tooltip{
+                    padding: 2px;
+                    background: #5c9acf;
+                }
+                .k-tooltip-content{
+                    padding: 4px;
+                    text-align: left;
+                    background: #fff;
+                    color: #666;
+                }
+                .k-callout {
+                    border-bottom-color: #5c9acf;
+                }
+            </style>
+        </div>
+
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

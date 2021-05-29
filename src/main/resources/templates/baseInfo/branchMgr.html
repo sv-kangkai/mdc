@@ -1,0 +1,945 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>分公司管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+
+<div class="content-wrapper">
+
+    <section class="content-header">
+        <h1>
+            分公司管理
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="/mc/index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">分公司管理</li>
+        </ol>
+    </section>
+
+    <!--<div id="window">-->
+        <!--<button id="history" class="k-button  k-primary">历史记录</button>-->
+        <!--<div id="placeGrid"></div>-->
+        <!--<div>-->
+            <!--<hr>-->
+        <!--</div>-->
+        <!--<div id="unboundPlaceGrid"></div>-->
+    <!--</div>-->
+
+    <!--<div id="window2">-->
+        <!--<div id="historyGrid"></div>-->
+    <!--</div>-->
+
+    <div class="container-fluid">
+
+        <div class="container-fluid">
+            <div id="grid"></div>
+            <script id="popup_editor" type="text/x-kendo-template">
+                <div class="k-edit-label"><label for="name"><span style="color:red;">*</span> 分公司名称</label></div>
+                <div data-container-for="name" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                           name="name" required="required"
+                                                                           data-required-msg="分公司名称为必填项！"
+                                                                           data-bind="value:name"></div>
+                <div class="k-edit-label"><label for="branchAddress"><span style="color:red;">*</span> 分公司地址</label>
+                </div>
+                <div data-container-for="branchAddress" class="k-edit-field"><input type="text"
+                                                                                    class="k-input k-textbox"
+                                                                                    name="branchAddress"
+                                                                                    required="required"
+                                                                                    data-required-msg="分公司地址为必填项！"
+                                                                                    data-bind="value:branchAddress">
+                </div>
+                <!--<div class="k-edit-label"><label for="userId">分公司负责人</label></div>-->
+                <!--<div data-container-for="userId" class="k-edit-field">-->
+                    <!--<input id="user1" data-role="combobox" data-bind="value:userId"/>-->
+                <!--</div>-->
+                <div class="k-edit-label"><label for="principal">分公司负责人</div>
+                <div data-container-for="principal" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                           name="name" data-bind="value:principal"></div>
+                <div class="k-edit-label"><label for="telephone"><span style="color:red;">*</span> 分公司联系电话</label></div>
+                <div data-container-for="telephone" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                                name="telephone" required="required"
+                                                                                data-required-msg="分公司联系电话为必填项！"
+                                                                                data-bind="value:telephone"></div>
+                <div class="k-edit-label"><label for="email"><span style="color:red;">*</span> 分公司邮箱</label></div>
+                <div data-container-for="email" class="k-edit-field"><input type="text" class="k-input k-textbox"
+                                                                            name="email" required="required"
+                                                                            data-required-msg="分公司邮箱为必填项！"
+                                                                            data-bind="value:email"></div>
+                <div class="k-edit-label"><label for="headQuartersId"><span style="color:red;">*</span> 总公司名称</label></div>
+                <div data-container-for="headQuartersId" class="k-edit-field">
+                    <input id="parent1" data-role="combobox" data-bind="value:headQuartersId" required="required"
+                           data-required-msg="请您选择所属总公司"/>
+                </div>
+            </script>
+            <script>
+                /*<![CDATA[*/
+                $(function () {
+                        // $("#window").hide();
+
+                        loadUserList();
+                    }
+                );
+
+                //初始化表格数据
+                function loadUserList() {
+
+                    var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "./allBranchByPage"
+                            },
+                            create: {
+                                url: "./insertBranch",
+                                dataType: "json",
+                                type: "post",
+                                contentType: "application/json;charset=UTF-8"
+                            },
+                            destroy: {
+                                url: "./deleteBranch",
+                                dataType: "json",
+                                type: "post",
+                                contentType: "application/json;charset=UTF-8"
+                            },
+                            update: {
+                                url: "./updateBranch",
+                                dataType: "json",
+                                type: "post",
+                                contentType: "application/json;charset=UTF-8"
+                            },
+                            parameterMap: function (options, operation) {
+
+                                if (operation == "read") {
+                                    var page = $("#grid").data("kendoGrid").dataSource.page();
+                                    var pageSize = $("#grid").data("kendoGrid").dataSource.pageSize();
+                                    return {page: page, pageSize: pageSize};
+                                }
+                                if (operation !== "read") {
+                                    console.log(options);
+                                    return kendo.stringify(options);
+                                }
+                            }
+                        },
+                        serverPaging: true,    //设定服务器来实现分页功能
+                        serverFiltering: false,
+                        serverSorting: false,
+                        requestEnd: onRequestEnd,
+                        pageSize: 10,
+                        schema: {
+                            model: {
+                                id: "id",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    name: {
+                                        type: "string",
+                                        validation: {
+                                            required: true,
+                                            required: {message: "分公司名称为必填项！"}
+                                        }
+                                    },
+                                    branchAddress: {
+                                        type: "string",
+                                        validation: {
+                                            required: true,
+                                            required: {message: "分公司地址为必填项！"}
+                                        }
+                                    },
+                                    telephone: {
+                                        type: "string",
+                                        validation: {
+                                            required: true,
+                                            required: {
+                                                message: "分公司联系电话为必填项！"
+                                            }
+                                        }
+                                    },
+                                    email: {
+                                        type: "string",
+                                        validation: {
+                                            required: true,
+                                            required: {message: "分公司邮箱为必填项！"}
+                                        }
+                                    },
+                                    headQuartersId: {type: "number"},
+                                    headQuartersName: {type: "string"},
+                                    principal:{type:"string"}
+                                    // userId: {type: "number"},
+                                    // userName: {type: "string"},
+                                }
+                            },
+                            data: function (response) {
+                                var list = JSON.parse(response).data;
+                                return list;
+                            },
+                            total: function (response) {
+                                return JSON.parse(response).total;
+                            }
+                        }
+                    });
+
+                    //dataSource是必填属性
+                    $("#grid").kendoGrid({
+                        dataSource: dataSource,
+                        height: 600,
+                        sortable: true, //表示是否支持排序， boolean型
+                        filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                        groupable: true,//表格标题
+                        // scrollable: {//表示是否有下拉条，boolean型(虚拟分页)
+                        //     virtual: true
+                        // },
+                        toolbar: [{name: "create", text: "新增"}],
+                        columnMenu: true,
+                        resizable: true,
+                        pageable: {
+                            // empty:"没有要显示的数据",
+                            // //代表是否支持刷新
+                            // refresh: true,
+                            // //表示每页显示的记录数，默认为5,10,20
+                            pageSizes: true,
+                            // //表示显示的页数，5表示1,2,3,4,5
+                            buttonCount: 5,
+                            totalPages: true,
+                            // input: true,//表示是否可以输入数字
+                            refresh: true,
+                            pageSize: 5,
+                            pageSizes: [5, 10, 15, 20],
+                            numeric: true,
+                            input: true,
+                            messages: {
+                                display: "显示 {0}-{1} 条，共 {2} 条",
+                                empty: "没有数据",
+                                itemsPerPage: "每页显示数量",
+                                first: "第一页",
+                                last: "最后一页",
+                                next: "下一页",
+                                previous: "上一页",
+                                page: "页",
+                                of: "共 {0}页"
+                            }
+                        },
+                        columns: [
+                            {
+                                field: "name",
+                                title: "分公司名称",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "branchAddress",
+                                title: "分公司地址",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "principal",
+                                title: "分公司负责人",
+                                // template: "#=userName#",
+                                // editor: chooseUser,
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "telephone",
+                                title: "分公司联系电话",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            }, {
+                                field: "email",
+                                title: "分公司邮箱",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "headQuartersId",
+                                title: "总公司名称",
+                                template: "#=headQuartersName#",
+                                // editor: roleListDropDownEditor,
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                command: [
+                                    {
+                                        name: "edit", text: {edit: "编辑", cancel: "取消", update: "更新"}
+                                    }, {
+                                        name: "destroy", text: "删除"
+                                    },
+                                    {
+                                        name: "maintain",
+                                        text: "签约信息维护",//名称
+                                        click: function (e) {
+                                            // e.target 是表示按钮的DOM元素
+                                            var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                            // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                            var data = this.dataItem(tr);
+                                            var branchId = data.id;//分公司id
+
+
+                                            var detailWindow = $("<div id='window'><button id='history' class='k-button  k-primary'>历史记录</button><div id='placeGrid'></div><div><hr></div><div id='unboundPlaceGrid'></div></div>");
+                                            $("body").append(detailWindow);
+
+                                            // $("#window").show();
+
+                                            var myWindow = $("#window");
+                                            myWindow.kendoWindow({
+                                                width: "700px",
+                                                height: "520px",
+                                                title: "签约信息维护",
+                                                close: function () {
+                                                    myWindow.data("kendoWindow").destroy();
+                                                }
+                                            });
+
+                                            myWindow.data("kendoWindow").center().open();
+
+                                            $("#history").click(function () {
+                                                history(branchId);
+                                            });
+
+                                            var placeDataSource = new kendo.data.DataSource({
+                                                transport: {
+                                                    read: {
+                                                        url: "../branchMgr/findContractByBranchId?branchId=" + branchId
+                                                    },
+                                                    update: {
+                                                        url: "../contract/updateContract",
+                                                        dataType: "json",
+                                                        type: "post",
+                                                        contentType: "application/json;charset=UTF-8"
+                                                    },
+                                                    parameterMap: function (options, operation) {
+                                                        if (operation == "update") {
+                                                            var endDate = options.endDeteTime;
+                                                            var startDate = options.startDateTime;
+                                                            var effectDate = options.effectDateTime;
+
+                                                            if (endDate != null) {
+                                                                if (endDate.length !== 19) {
+                                                                    options.endDeteTime = kendo.toString(kendo.parseDate(endDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");
+                                                                }
+                                                            }
+                                                            if (startDate != null) {
+                                                                if (startDate.length !== 19) {
+                                                                    options.startDateTime = kendo.toString(kendo.parseDate(startDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");
+                                                                }
+                                                            }
+
+                                                            if (effectDate != null) {
+                                                                if (effectDate.length !== 19) {
+                                                                    options.effectDateTime = kendo.toString(kendo.parseDate(effectDate, "yyyy-MM-ddTHH:mm:sszzz"), "yyyy-MM-dd HH:mm:ss");
+                                                                }
+                                                            }
+
+                                                            var list = {
+                                                                id: options.id,
+                                                                contractCode: options.contractCode,
+                                                                startDateTime: options.startDateTime,
+                                                                endDateTime: options.endDeteTime,
+                                                                effectDateTime: options.effectDateTime
+                                                            };
+                                                            return kendo.stringify(list);
+                                                        }
+                                                    }
+                                                },
+                                                serverPaging: false,    //设定服务器来实现分页功能
+                                                serverFiltering: false,
+                                                serverSorting: false,
+                                                requestEnd: function (e) {
+                                                    if (e.type == undefined) {
+                                                        e.sender.read();
+                                                    }
+
+                                                    //更新成功后弹出提示信息
+                                                    var response = e.response;
+                                                    if (response) {
+                                                        var type = e.type;
+                                                        if (type != 'read') {
+                                                            var status = response.status;
+                                                            if (status == 200) {
+                                                                this.read();
+                                                            }
+                                                            else {
+                                                                // alert(response.msg);
+                                                            }
+                                                        }
+                                                    }
+                                                },
+                                                pageSize: 10,
+                                                schema: {
+                                                    model: {
+                                                        id: "id",
+                                                        fields: {
+                                                            id: {type: "number", editable: false},
+                                                            placeName: {type: "string", editable: false},
+                                                            contractCode: {type: "string"},
+                                                            effectDateTime: {type: "timestamp"},
+                                                            startDateTime: {type: "timestamp"},
+                                                            endDeteTime: {type: "timestamp"}
+                                                        }
+                                                    },
+                                                    data: function (response) {
+                                                        var list = JSON.parse(response);
+                                                        return list;
+                                                    }
+                                                }
+                                            });
+
+                                            //dataSource是必填属性
+                                            $("#placeGrid").kendoGrid({
+                                                toolbar: "已签约场地",
+                                                dataSource: placeDataSource,
+                                                height: 215,
+                                                sortable: true, //表示是否支持排序， boolean型
+                                                filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                                                columnMenu: true,
+                                                resizable: true,
+                                                columns: [
+                                                    {
+                                                        field: "placeName",
+                                                        title: "场地名称",
+                                                        attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                                                    },
+                                                    {
+                                                        field: "contractCode",
+                                                        title: "合同编号",
+                                                        attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                                                    },
+                                                    {
+                                                        field: "effectDateTime",
+                                                        title: "签约时间",
+                                                        format: "{0:yyyy-MM-dd HH:mm}",
+                                                        editor: changeDate,
+                                                        attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                                                    },
+                                                    {
+                                                        field: "startDateTime",
+                                                        title: "开始时间",
+                                                        format: "{0:yyyy-MM-dd HH:mm}",
+                                                        editor: changeDate,
+                                                        attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                                                    },
+                                                    {
+                                                        field: "endDeteTime",
+                                                        title: "结束时间",
+                                                        format: "{0:yyyy-MM-dd HH:mm}",
+                                                        editor: changeDate,
+                                                        attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                                                    },
+                                                    {
+                                                        field: "image",
+                                                        title: "上传",
+                                                        editor: categoryDropDownEditor,
+                                                        hidden: true
+                                                    },
+                                                    {
+                                                        command: [
+                                                            {
+                                                                name: "edit",
+                                                                text: {edit: "编辑", cancel: "取消", update: "更新"}
+                                                            },
+                                                            {
+                                                                text: "下载",//名称
+                                                                click: function (e) {
+                                                                    // e.target 是表示按钮的DOM元素
+                                                                    var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                                                    // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                                                    var data = this.dataItem(tr);
+                                                                    var placeId = data.placeId;
+                                                                    window.location = "../file/download?placeId=" + placeId + "&type=1";
+                                                                }
+                                                            },
+                                                            {
+                                                                text: "预览",//名称
+                                                                click: function (e) {
+                                                                    // e.target 是表示按钮的DOM元素
+                                                                    var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                                                    // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                                                    var data = this.dataItem(tr);
+                                                                    var placeId = data.placeId;
+                                                                    window.open("../file/download?placeId=" + placeId + "&type=2", 'newwindow', 'height=600, width=600, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no')
+                                                                    // window.location="/mc/file/download?placeId="+placeId+"&type=2";
+                                                                }
+                                                            },
+                                                            {
+                                                                name: "解约场地", click: function (e) {
+                                                                    var tr = $(e.target).closest("tr");
+                                                                    var data = this.dataItem(tr);
+                                                                    var placeId = data.placeId;
+                                                                    var supId = data.owner;
+                                                                    var flagId = 2;
+
+                                                                    $.ajax({
+                                                                        type: "POST",
+                                                                        url: "../headMgr/unboundPlace",
+                                                                        data: {
+                                                                            placeId: placeId,
+                                                                            supId: supId,
+                                                                            flagId: flagId
+                                                                        },
+                                                                        success: function (data) {
+                                                                            var placeGrid = $("#placeGrid").data("kendoGrid");
+                                                                            placeGrid.dataSource.read();
+                                                                            var unboundPlaceGrid = $("#unboundPlaceGrid").data("kendoGrid");
+                                                                            unboundPlaceGrid.dataSource.read();
+                                                                        }
+
+                                                                    })
+                                                                }
+                                                            }
+                                                        ],
+                                                        title: "操作",
+                                                        width: "300px"
+                                                    }
+                                                ],
+                                                editable: {
+                                                    mode: "popup",
+                                                    window: {
+                                                        title: "签约信息管理"
+                                                    }
+                                                }
+                                            });
+
+
+                                            var unboundPlaceDataSource = new kendo.data.DataSource({
+                                                transport: {
+                                                    read: {
+                                                        url: "../headMgr/findAllUnboundPlace"
+                                                    }
+                                                },
+                                                serverPaging: false,    //设定服务器来实现分页功能
+                                                serverFiltering: false,
+                                                serverSorting: false,
+                                                pageSize: 10,
+                                                schema: {
+                                                    model: {
+                                                        id: "id",
+                                                        fields: {
+                                                            id: {type: "number", editable: false},
+                                                            name: {type: "string"}
+                                                        }
+                                                    }
+                                                }
+                                            });
+
+                                            //dataSource是必填属性
+                                            $("#unboundPlaceGrid").kendoGrid({
+                                                toolbar: "未签约场地",
+                                                dataSource: unboundPlaceDataSource,
+                                                height: 215,
+                                                sortable: true, //表示是否支持排序， boolean型
+                                                filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                                                columnMenu: true,
+                                                columns: [
+                                                    {
+                                                        field: "name",
+                                                        title: "场地名称"
+                                                    }, {
+                                                        command: [
+                                                            {
+                                                                name: "签约场地", click: function (e) {
+                                                                    var tr = $(e.target).closest("tr");
+                                                                    var data = this.dataItem(tr);
+                                                                    var placeId = data.id;
+
+                                                                    $.ajax({
+                                                                        type: "POST",
+                                                                        url: "../branchMgr/branchBoundPlace",
+                                                                        data: {
+                                                                            branchId: branchId,
+                                                                            placeId: placeId
+                                                                        },
+                                                                        success: function (data) {
+                                                                            var placeGrid = $("#placeGrid").data("kendoGrid");
+                                                                            placeGrid.dataSource.read();
+                                                                            var unboundPlaceGrid = $("#unboundPlaceGrid").data("kendoGrid");
+                                                                            unboundPlaceGrid.dataSource.read();
+                                                                            // location.reload();
+                                                                        }
+                                                                    })
+                                                                }
+                                                            }
+                                                        ],
+                                                        title: "操作",
+                                                        width: "250px"
+                                                    }
+                                                ]
+                                            });
+
+
+                                        }
+                                    }
+                                ],
+                                title: "操作",
+                                width: "250px"
+                            }
+                        ],
+                        editable: {
+                            mode: "popup",
+                            template: kendo.template($("#popup_editor").html()),
+                            window: {
+                                title: "分公司管理"
+                            }
+                        },
+                        edit: function (e) {
+                            $("#user1").kendoComboBox({
+                                autoBind: false,
+                                placeholder: "请选择...",
+                                dataTextField: "name",
+                                dataValueField: "id",
+                                value: e.model.userId,
+                                text: e.model.userName,
+                                filter: "contains",
+                                suggest: true,
+                                dataSource: {
+                                    transport: {
+                                        read: {
+                                            type: "get",
+                                            url: "../branchMgr/findAllByStatus",
+                                            dataType: "json",
+                                            contentType: "application/json",
+                                            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                        }
+                                    }
+                                }
+                            });
+
+                            $("#parent1").kendoComboBox({
+                                autoBind: false,
+                                placeholder: "请选择...",
+                                dataTextField: "name",
+                                dataValueField: "id",
+                                value: e.model.headQuartersId,
+                                text: e.model.headQuartersName,
+                                filter: "contains",
+                                suggest: true,
+                                dataSource: {
+                                    transport: {
+                                        read: {
+                                            type: "get",
+                                            url: "../headMgr/allHead",
+                                            dataType: "json",
+                                            contentType: "application/json",
+                                            headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                                        }
+                                    }
+                                }
+                            })
+
+                        }
+
+                    });
+                }
+
+                //add tooltip
+                $("#grid").kendoTooltip({
+                    show: function (e) {
+                        if ($.trim(this.content.text()) != "") {
+                            $('[role="tooltip"]').css("visibility", "visible");
+                        }
+                    },
+                    hide: function () {
+                        $('[role="tooltip"]').css("visibility", "hidden");
+                    },
+                    filter: "td:nth-child(n+3)",
+                    content: function (e) {
+                        var element = e.target[0];
+                        if (element.offsetWidth < element.scrollWidth) {
+                            var text = $(e.target).text();
+                            return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';
+                        } else {
+                            $('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块
+                            return "";
+                        }
+                    }
+                }).data("kendoTooltip");
+
+                //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+                function onRequestEnd(e) {
+                    if (e.type == "create") {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                    else if (e.type == "update") {
+                        console.log(888);
+                        e.sender.read();
+                    }
+                    else if (e.type == "destroy") {
+                        e.sender.read();
+                    }
+
+                    //更新成功后弹出提示信息
+                    var response = e.response;
+                    if (response) {
+                        var type = e.type;
+                        if (type != 'read') {
+                            var status = response.status;
+                            if (status == 200) {
+                                this.read();
+                            }
+                            else {
+                                // alert(response.msg);
+                            }
+                        }
+                    }
+                }
+
+                //编辑时boolean类型复选框样式修改
+                function customBoolEditor(container, options) {
+                    var guid = kendo.guid();
+                    $('<input class="k-checkbox" id="' + guid + '" type="checkbox" name="' + options.field + '" data-type="boolean" data-bind="checked:' + options.field + '">').appendTo(container);
+                    $('<label class="k-checkbox-label" for="' + guid + '">&#8203;</label>').appendTo(container);
+                }
+
+                function changeDate(container, options) {
+                    var input = $('<input name="' + options.field + '"/>');
+                    input.appendTo(container);
+                    input.kendoDateTimePicker({
+                        format: "{0:yyyy-MM-dd HH:mm}"
+                    });
+                }
+
+                // //打开标记窗口时下拉列表展示
+                // function roleListDropDownEditor(container, options) {
+                //     var headId = options.model.headQuartersId;
+                //     var headName = options.model.headQuartersName;
+                //
+                //     var input = $('<input name="' + options.field + '"/>');
+                //     input.appendTo(container);
+                //     input.kendoComboBox({
+                //         autoBind: false,
+                //         placeholder: "请选择...",
+                //         dataTextField: "name",
+                //         dataValueField: "id",
+                //         value: headId,
+                //         text: headName,
+                //         filter: "contains",
+                //         suggest: true,
+                //         dataSource: {
+                //             transport: {
+                //                 read: {
+                //                     type: "get",
+                //                     url: "/mc/headMgr/allHead",
+                //                     dataType: "json",
+                //                     contentType: "application/json",
+                //                     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                //                 }
+                //             }
+                //         }
+                //     });
+                // }
+                //
+                //
+                // //打开标记窗口时下拉列表展示
+                // function chooseUser(container, options) {
+                //     var userId = options.model.userId;
+                //     var userName = options.model.userName;
+                //
+                //     var input = $('<input name="' + options.field + '"/>');
+                //     input.appendTo(container);
+                //     input.kendoComboBox({
+                //         autoBind: false,
+                //         placeholder: "请选择...",
+                //         dataTextField: "name",
+                //         dataValueField: "id",
+                //         value: userId,
+                //         text: userName,
+                //         filter: "contains",
+                //         suggest: true,
+                //         dataSource: {
+                //             transport: {
+                //                 read: {
+                //                     type: "get",
+                //                     url: "/mc/branchMgr/findAllByStatus",
+                //                     dataType: "json",
+                //                     contentType: "application/json",
+                //                     headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                //                 }
+                //             }
+                //         }
+                //     });
+                // }
+
+
+                //字段修改格式化 修改框 转换为上传按钮
+                function categoryDropDownEditor(container, options) {
+                    var placeId = options.model.placeId;
+                    // $('<input type="file" name="' + options.field + '"/>')
+                    $('<input type="file" name="file" id="file"/>')
+                        .appendTo(container)
+                        .kendoUpload({
+                            async: {
+                                saveUrl: "../file/upload",
+                                autoUpload: true
+                            },
+                            localization: {     //设置上传按钮名称
+                                select: "上传"
+                            },
+                            success: function (e) {//上传成功后执行的回调函数
+                                var uploadpath = e.response.uploadpath;
+                                var fileName = e.response.fileName;
+
+                                $.ajax({
+                                    type: "post",
+                                    url: "../placeMgr/saveFileToDB",
+                                    data: {
+                                        uploadpath: uploadpath,
+                                        placeId: placeId,
+                                        fileName: fileName
+                                    },
+                                    success: function (res) {
+                                        console.log(uploadpath);
+                                        // myWindow2.data("kendoWindow").close();
+                                        // location.reload();
+                                    }
+                                })
+                            }
+                        });
+                }
+
+                function history(branchId) {
+                    var detailWindow2 = $("<div id='window2'><div id='historyGrid'></div></div>");
+                    $("body").append(detailWindow2);
+
+                    var myWindow2 = $("#window2");
+                    myWindow2.kendoWindow({
+                        width: "700px",
+                        height: "520px",
+                        title: "历史签约信息",
+                        close: function () {
+                            myWindow2.data("kendoWindow").destroy();
+                        }
+                    });
+
+                    myWindow2.data("kendoWindow").center().open();
+
+                    var historyDataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "../branchMgr/findHistoryContractByBranchId?branchId=" + branchId
+                            }
+                        },
+                        pageSize: 10,
+                        schema: {
+                            model: {
+                                id: "id",
+                                fields: {
+                                    id: {type: "number", editable: false},
+                                    placeName: {type: "string", editable: false},
+                                    contractCode: {type: "string"},
+                                    effectDateTime: {type: "timestamp"},
+                                    startDateTime: {type: "timestamp"},
+                                    endDeteTime: {type: "timestamp"}
+                                }
+                            },
+                            data: function (response) {
+                                var list = JSON.parse(response);
+                                return list;
+                            }
+                        }
+                    });
+
+                    //dataSource是必填属性
+                    $("#historyGrid").kendoGrid({
+                        toolbar: "历史签约信息",
+                        dataSource: historyDataSource,
+                        height: 500,
+                        sortable: true, //表示是否支持排序， boolean型
+                        filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                        columnMenu: true,
+                        resizable: true,
+                        columns: [
+                            {
+                                field: "placeName",
+                                title: "场地名称",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "contractCode",
+                                title: "合同编号",
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "effectDateTime",
+                                title: "签约时间",
+                                format: "{0:yyyy-MM-dd HH:mm}",
+                                editor: changeDate,
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "startDateTime",
+                                title: "开始时间",
+                                format: "{0:yyyy-MM-dd HH:mm}",
+                                editor: changeDate,
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                field: "endDeteTime",
+                                title: "结束时间",
+                                format: "{0:yyyy-MM-dd HH:mm}",
+                                editor: changeDate,
+                                attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                            },
+                            {
+                                command: [
+                                    {
+                                        text: "下载",//名称
+                                        click: function (e) {
+                                            // e.target 是表示按钮的DOM元素
+                                            var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                            // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                            var data = this.dataItem(tr);
+                                            var placeId = data.placeId;
+                                            window.location = "../file/download?placeId=" + placeId + "&type=1";
+                                        }
+                                    },
+                                    {
+                                        text: "预览",//名称
+                                        click: function (e) {
+                                            // e.target 是表示按钮的DOM元素
+                                            var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                            // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                            var data = this.dataItem(tr);
+                                            var placeId = data.placeId;
+                                            window.open("../file/download?placeId=" + placeId + "&type=2", 'newwindow', 'height=600, width=600, top=0, left=0, toolbar=no, menubar=no, scrollbars=no, resizable=no, location=no, status=no')
+                                            // window.location="/mc/file/download?placeId="+placeId+"&type=2";
+                                        }
+                                    }
+                                ],
+                                title: "操作",
+                                width: "300px"
+                            }
+                        ],
+                        editable: {
+                            mode: "popup",
+                            window: {
+                                title: "历史签约信息"
+                            }
+                        }
+                    });
+                }
+
+                /*]]>*/
+            </script>
+
+            <!--设置tooltip的样式-->
+            <style>
+                div[role=tooltip].k-tooltip {
+                    padding: 2px;
+                    background: #5c9acf;
+                }
+
+                .k-tooltip-content {
+                    padding: 4px;
+                    text-align: left;
+                    background: #fff;
+                    color: #666;
+                }
+
+                .k-callout {
+                    border-bottom-color: #5c9acf;
+                }
+            </style>
+        </div>
+
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

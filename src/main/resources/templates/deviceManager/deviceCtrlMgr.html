@@ -1,0 +1,814 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>设备控制</title>
+</head>
+
+<style>
+    .login-button { /* 按钮美化 */
+        width: 70px; /* 宽度 */
+        height: 28px; /* 高度 */
+        border-width: 0px; /* 边框宽度 */
+        border-radius: 3px; /* 边框半径 */
+        background: #1E90FF; /* 背景颜色 */
+        cursor: pointer; /* 鼠标移入按钮范围时出现手势 */
+        outline: none; /* 不显示轮廓线 */
+        font-family: Microsoft YaHei; /* 设置字体 */
+        color: white; /* 字体颜色 */
+        font-size: 17px; /* 字体大小 */
+    }
+
+    .login-button:hover { /* 鼠标移入按钮范围时改变颜色 */
+        background: #5599FF;
+    }
+</style>
+
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section class="content-header">
+        <h1>
+            设备控制
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">设备控制</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+        <!--<div id="window">-->
+        <!--<table>-->
+        <!--<div>-->
+        <!--<button id="btnStatus" type="button" class="k-button  k-primary" style="margin-left: 170px">查询设备状态-->
+        <!--</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--按摩时长(分钟):<input type="text" id="textarea" class="k-input k-textbox" placeholder="请输入按摩时长..."-->
+        <!--onkeyup="this.value=this.value.replace(/[^0-9-]+/,'');">-->
+        <!--<button id="btnOpenDevice" type="button" class="k-button  k-primary">开启设备</button>-->
+        <!--<button id="btnCloseDevice" type="button" class="k-button  k-primary">关闭设备</button>-->
+        <!--</div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--椅子接收频道:<input type="text" id="channel" class="k-input k-textbox" placeholder="请输入椅子接收频道">-->
+        <!--<button id="btnUpdateChannel" type="button" class="k-button  k-primary">修改频道</button>-->
+        <!--</div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--椅子编号:<input type="text" id="code" class="k-input k-textbox" placeholder="请输入椅子编号">-->
+        <!--<button id="btnUpdateCode" type="button" class="k-button  k-primary">修改编号</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--<button id="btnZanting" type="button" class="k-button  k-primary">暂停按摩</button>-->
+        <!--<button id="btnContinue" type="button" class="k-button  k-primary" style="margin-left: 230px">继续按摩-->
+        <!--</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--<button id="btnRuo" type="button" class="k-button  k-primary">按摩强度[弱]</button>-->
+        <!--<button id="btnZhong" type="button" class="k-button  k-primary" style="margin-left: 55px">按摩强度[中]-->
+        <!--</button>-->
+        <!--<button id="btnQiang" type="button" class="k-button  k-primary" style="margin-left: 55px">按摩强度[强]-->
+        <!--</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--<div style="padding-top: 5px">-->
+        <!--充电时长(分钟):<input type="text" id="chongdian" class="k-input k-textbox" placeholder="请输入充电时长..."-->
+        <!--onkeyup="this.value=this.value.replace(/[^0-9-]+/,'');">-->
+        <!--<button id="btnOpenCharge" type="button" class="k-button  k-primary">开启充电</button>-->
+        <!--<button id="btnCloseCharge" type="button" class="k-button  k-primary">关闭充电</button>-->
+        <!--</div>-->
+        <!--<div style="border-bottom:1px solid #000;padding-top: 5px"></div>-->
+        <!--</table>-->
+        <!--</div>-->
+
+
+        <div class="demo-section k-content">
+
+            <div id="fieldlist" style="background-color:#EDF0F4">
+                <label>场地:</label> <input id="place"/> <!--下拉框-->
+                <label>设备:</label> <input id="device" class="k-input k-textbox"/> <!--下拉框-->
+                <button class="k-button  k-primary" onclick="grid()">查询</button>
+            </div>
+
+        </div>
+
+        <div id="grid"></div>
+        <script>
+            /*<![CDATA[*/
+            $(function () {
+                // $("#window").hide();
+
+                $("#place").kendoComboBox({
+                    autoBind: false,
+                    placeholder: "请选择...",
+                    dataTextField: "name",
+                    dataValueField: "id",
+                    filter: "contains",
+                    suggest: true,
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type: "get",
+                                url: "../place/findAllPlaceFirst",
+                                dataType: "json",
+                                contentType: "application/json",
+                                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                            }
+                        }
+                    }
+                });
+
+                //dataSource是必填属性
+                $("#grid").kendoGrid({
+                    height: 600,
+                    sortable: true, //表示是否支持排序， boolean型
+                    filterable: true,//filterable表示过滤，即能进行等于，不等于，包含，已开头等过滤操作，boolean型
+                    groupable: true,//表格标题
+                    // scrollable: {//表示是否有下拉条，boolean型(虚拟分页)
+                    //     virtual: true
+                    // },
+                    columnMenu: true,
+                    resizable: true,
+                    pageable: {
+                        // empty:"没有要显示的数据",
+                        // //代表是否支持刷新
+                        // refresh: true,
+                        // //表示每页显示的记录数，默认为5,10,20
+                        pageSizes: true,
+                        // //表示显示的页数，5表示1,2,3,4,5
+                        buttonCount: 5,
+                        totalPages: true,
+                        // input: true,//表示是否可以输入数字
+                        refresh: true,
+                        pageSize: 5,
+                        pageSizes: [5, 10, 15, 20],
+                        numeric: true,
+                        input: true,
+                        messages: {
+                            display: "显示 {0}-{1} 条，共 {2} 条",
+                            empty: "没有数据",
+                            itemsPerPage: "每页显示数量",
+                            first: "第一页",
+                            last: "最后一页",
+                            next: "下一页",
+                            previous: "上一页",
+                            page: "页",
+                            of: "共 {0}页"
+                        }
+                    },
+                    columns: [
+                        {
+                            field: "mcSn",
+                            title: "按摩椅编号",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "mcStatus",
+                            title: "按摩椅状态",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;#=mcStatus == '空闲中' || mcStatus =='工作中' || mcStatus =='复位中' ? 'background-color:lime;' : 'background-color:gold;'#"}
+                        },
+                        {
+                            field: "mcIsNotOnline",
+                            title: "是否在线",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;#=mcIsNotOnline == '在线' ? 'background-color:lime;' : 'background-color:gold;'#"}
+                        },
+                        {
+                            field: "strength",
+                            title: "按摩强度",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "placeName",
+                            title: "所属场地",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "deviceModelEntity",
+                            title: "所属型号",
+                            template: "#=deviceModelEntity.name#",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "supplierEntity",
+                            title: "供应商",
+                            template: "#=supplierEntity.supplierName#",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "gatewayEntity",
+                            title: "所属网关",
+                            template: "#=gatewayEntity.gatewaySn#",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "lastCorrespondTime",
+                            title: "最后在线时间",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "offlineTime",
+                            title: "离线时长(min)",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            field: "note",
+                            title: "备注信息",
+                            attributes: {style: "white-space:nowrap;text-overflow:ellipsis;"}
+                        },
+                        {
+                            command: [
+                                {
+                                    text: "控制设备",//名称
+                                    click: function (e) {
+                                        // e.target 是表示按钮的DOM元素
+                                        var tr = $(e.target).closest("tr"); // 得到当前表格的行 (tr)
+                                        // 将数据绑定到当前表行。我们则可以通过data来取到这一行的数据了
+                                        var data = this.dataItem(tr);
+
+                                        var str = "<div id='window'>" +
+                                            "            <table>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    <span style='color:red;'>【" + data.mcSn + "】</span>" +
+                                            "                    <span style='color:red;'>【" + data.placeName + "】</span>" +
+                                            "                    <button id='btnStatus' type='button' class='k-button  k-primary'>查询设备状态" +
+                                            "                    </button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    按摩时长(分钟):<input type='text' id='textarea' class='k-input k-textbox' placeholder='请输入按摩时长...'>" +
+                                            "                    <button id='btnOpenDevice' type='button' class='k-button  k-primary'>开启设备</button>" +
+                                            "                    <button id='btnCloseDevice' type='button' class='k-button  k-primary'>关闭设备</button>" +
+                                            "                </div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    椅子接收频道:<input type='text' id='channel' class='k-input k-textbox' placeholder='请输入模块接收频道'>" +
+                                            "                    <button id='btnUpdateChannel' type='button' class='k-button  k-primary'>修改频道</button>" +
+                                            "                </div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    椅子编号:<input type='text' id='code' class='k-input k-textbox' placeholder='请输入模块编号'>" +
+                                            "                    <button id='btnUpdateCode' type='button' class='k-button  k-primary'>修改模块编号</button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    <button id='btnZanting' type='button' class='k-button  k-primary'>暂停按摩</button>" +
+                                            "                    <button id='btnContinue' type='button' class='k-button  k-primary' style='margin-left: 230px'>继续按摩" +
+                                            "                    </button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    <button id='btnRuo' type='button' class='k-button  k-primary'>按摩强度[弱]</button>" +
+                                            "                    <button id='btnZhong' type='button' class='k-button  k-primary' style='margin-left: 55px'>按摩强度[中]" +
+                                            "                    </button>" +
+                                            "                    <button id='btnQiang' type='button' class='k-button  k-primary' style='margin-left: 55px'>按摩强度[强]" +
+                                            "                    </button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "                <div style='padding-top: 5px'>" +
+                                            "                    充电时长(分钟):<input type='text' id='chongdian' class='k-input k-textbox' placeholder='请输入充电时长...'>" +
+                                            "                    <button id='btnOpenCharge' type='button' class='k-button  k-primary'>开启充电</button>" +
+                                            "                    <button id='btnCloseCharge' type='button' class='k-button  k-primary'>关闭充电</button>" +
+                                            "                </div>" +
+                                            "                <div style='border-bottom:1px solid #000;padding-top: 5px'></div>" +
+                                            "            </table>" +
+                                            "</div>";
+
+                                        var detailWindow = $(str);
+
+                                        $.ajax({
+                                            type: "post",
+                                            url: "../weixin/selectMcStatus",
+                                            data: {
+                                                chairId: data.mcSn
+                                            },
+                                            success: function (res) {
+                                                console.log("查询按摩椅状态中。。。");
+                                            }
+                                        });
+
+                                        $("body").append(detailWindow);
+
+                                        var myWindow = $("#window");
+
+                                        //锁定，并显示加载动画
+                                        kendo.ui.progress(detailWindow, true);
+
+                                        myWindow.kendoWindow({
+                                            width: "450px",
+                                            title: "控制设备",
+                                            close: function () {
+                                                // $.ajax({
+                                                //     type: "post",
+                                                //     url: "../weixin/cleanDeviceStatus",
+                                                //     data: {
+                                                //         chairId: data.mcSn
+                                                //     }
+                                                // });
+                                                myWindow.data("kendoWindow").destroy();
+                                            }
+                                        });
+
+                                        myWindow.data("kendoWindow").center().open();
+
+                                        var t1 = setInterval(function(){
+                                            clearInterval(t1);//去掉定时器
+                                            //解除锁定
+                                            kendo.ui.progress(detailWindow, false);
+                                        },2000);//使用字符串执行方法
+
+                                        var g = $("#grid").data("kendoGrid");
+
+                                        $("#btnStatus").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/findChairStatusSys",
+                                                    data: {
+                                                        chairId: data.mcSn
+                                                    },
+                                                    success: function (res) {
+                                                        if(res==1){
+                                                            alert("当前按摩椅空闲中");
+                                                        }else if(res==2){
+                                                            alert("当前按摩椅工作中");
+                                                        }else if(res==3){
+                                                            alert("当前按摩椅复位中");
+                                                        }else if(res==4 || res==5){
+                                                            alert("当前按摩椅未响应");
+                                                        }
+                                                        // clearInterval(timeout);
+                                                        myWindow.data("kendoWindow").close();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnOpenDevice").kendoButton({
+                                            click: function () {
+                                                //锁定，并显示加载动画
+                                                kendo.ui.progress(detailWindow, true);
+
+                                                var text = $("#textarea").val();
+                                                if (text == "") {
+                                                    alert("请输入按摩时长！");
+                                                    kendo.ui.progress(detailWindow, false);
+                                                    return;
+                                                }
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendStartChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        mcTime: text
+                                                    },
+                                                    success: function (res) {
+                                                        var timeout = setInterval(function(){
+                                                            $.ajax({
+                                                                type: "post",
+                                                                url: "../weixin/findChairRuningSys",
+                                                                data: {
+                                                                    chairId: data.mcSn
+                                                                },
+                                                                success: function (res) {
+                                                                    var t2 = setInterval(function(){
+                                                                        clearInterval(t2);//去掉定时器
+                                                                        //解除锁定
+                                                                        kendo.ui.progress(detailWindow, false);
+                                                                    },2000);//使用字符串执行方法
+
+                                                                    if(res==1){
+                                                                        alert("按摩椅开启成功！");
+                                                                    }
+                                                                    // else if(res==2 || res==3 || res==4){
+                                                                    //     alert("按摩椅开启失败！");
+                                                                    // }
+                                                                    clearInterval(timeout);
+                                                                    myWindow.data("kendoWindow").close();
+                                                                    g.dataSource.read();
+                                                                }
+                                                            })
+                                                        },500);
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnCloseDevice").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendEndChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("设备停止成功！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnOpenCharge").kendoButton({
+                                            click: function () {
+
+                                                var text = $("#chongdian").val();
+                                                if (text == "") {
+                                                    alert("请输入充电时长！");
+                                                    return;
+                                                }
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendChargeMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        mcTime: text
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("充电开启成功！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnCloseCharge").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendUnChargeMsg",
+                                                    data: {
+                                                        chairId: data.mcSn
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("充电停止成功！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnRuo").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendStrengthChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        strength: 0
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("按摩椅强度已设置为弱!");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnZhong").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendStrengthChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        strength: 1
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("按摩椅强度已设置为中!");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnQiang").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendStrengthChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        strength: 2
+                                                    },
+                                                    success: function (res) {
+                                                        // alert("按摩椅强度已设置为强!");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnZanting").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendContinueChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        continueType: 0
+                                                    },
+                                                    success: function (res) {
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnContinue").kendoButton({
+                                            click: function () {
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendContinueChairMsg",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        continueType: 1
+                                                    },
+                                                    success: function (res) {
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnUpdateChannel").kendoButton({
+                                            click: function () {
+                                                var channel = $("#channel").val();
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendUpdateChannel",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        channel: channel
+                                                    },
+                                                    success: function (res) {
+                                                        alert("修改模块端口成功！");
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        });
+
+                                        $("#btnUpdateCode").kendoButton({
+                                            click: function () {
+                                                var code = $("#code").val();
+                                                console.log(code);
+
+                                                $.ajax({
+                                                    type: "post",
+                                                    url: "../weixin/sendUpdateCode",
+                                                    data: {
+                                                        chairId: data.mcSn,
+                                                        newChairId: code
+                                                    },
+                                                    success: function (res) {
+                                                        myWindow.data("kendoWindow").close();
+                                                        //location.reload();
+                                                        g.dataSource.read();
+                                                    }
+                                                })
+                                            }
+                                        })
+                                    }
+                                }
+                            ],
+                            title: "操作",
+                            width: "100px"
+                        }
+                    ],
+                    editable: {
+                        mode: "popup",
+                        window: {
+                            title: "设备管理"
+                        }
+                    }
+                });
+
+
+            });
+
+            //点击查询按钮
+            function grid() {
+                var placeId = $("#place").data("kendoComboBox").value();//场地id
+                var deviceId = $("#device").val();//设备id
+
+                if (placeId == "" && deviceId == "") {
+                    alert("请选择场地或输入设备编号！");
+                    return;
+                }
+                if (placeId == "") {
+                    placeId = 0;
+                }
+                if (deviceId == "") {
+                    deviceId = 0;
+                }
+                console.log(placeId);
+                console.log(deviceId);
+
+                loadUserList(placeId, deviceId);
+            }
+
+            //初始化表格数据
+            function loadUserList(placeId, deviceId) {
+
+                var dataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "../place/findDeviceByPlace?placeId=" + placeId + "&deviceId=" + deviceId
+                        }
+                    },
+                    serverPaging: false,    //设定服务器来实现分页功能
+                    serverFiltering: false,
+                    serverSorting: false,
+                    requestEnd: onRequestEnd,
+                    pageSize: 10,
+                    schema: {
+                        model: {
+                            id: "id",
+                            fields: {
+                                id: {type: "number", editable: false},
+                                mcSn: {type: "string"},
+                                // maintainDateTime: {type: "timestamp"},
+                                // latitude: {type: "number"},
+                                // longitude: {type: "number"},
+                                mcIsNotOnline: {type: "int"},
+                                lastCorrespondTime: {type: "timestamp"},
+                                offlineTime: {type: "int"},
+                                mcStatus: {type: "int"},
+                                strength: {type: "int"},
+                                statusName: {type: "string"},
+                                note: {type: "string"},
+                                placeId: {type: "number"},
+                                placeName: {type: "string"},
+                                deviceModelEntity: {defaultValue: {id: 1, name: ""}},
+                                supplierEntity: {defaultValue: {id: 1, supplierName: ""}}
+                            }
+                        },
+                        data: function (response) {
+                            var list = JSON.parse(response).data;
+                            console.log(list);
+                            for (var i = 0; i < list.length; i++) {
+                                var content2 = list[i];
+                                var flag = content2.mcStatus;
+                                var str = content2.strength;
+                                var online = content2.mcIsNotOnline;
+
+                                if (online == 1) {
+                                    content2.mcIsNotOnline = "在线";
+                                } else if (online == 0) {
+                                    content2.mcIsNotOnline = "不在线";
+                                }
+                                // console.log(flag);
+                                if (flag == 1) {
+                                    content2.mcStatus = "空闲中";
+                                } else if (flag == 2) {
+                                    content2.mcStatus = "工作中";
+                                } else if (flag == 3) {
+                                    content2.mcStatus = "复位中";
+                                } else if (flag == 4) {
+                                    content2.mcStatus = "未响应";
+                                } else if (flag == 0) {
+                                    content2.mcStatus = "未查询";
+                                }
+
+                                if (str == 0) {
+                                    content2.strength = "弱";
+                                } else if (str == 1) {
+                                    content2.strength = "中";
+                                } else if (str == 2) {
+                                    content2.strength = "强";
+                                } else if (str == 3) {
+                                    content2.strength = "未响应";
+                                }
+                            }
+                            return list;
+                        },
+                        total: function (response) {
+                            console.log(JSON.parse(response).total);
+                            return JSON.parse(response).total;
+                        }
+                    }
+                });
+
+                $("#grid").data("kendoGrid").setDataSource(dataSource);
+            }
+
+            //add tooltip
+            $("#grid").kendoTooltip({
+                show: function (e) {
+                    if ($.trim(this.content.text()) != "") {
+                        $('[role="tooltip"]').css("visibility", "visible");
+                    }
+                },
+                hide: function () {
+                    $('[role="tooltip"]').css("visibility", "hidden");
+                },
+                filter: "td:nth-child(n+3)",
+                content: function (e) {
+                    var element = e.target[0];
+                    if (element.offsetWidth < element.scrollWidth) {
+                        var text = $(e.target).text();
+                        return '<div style="min-width:100px;max-width: 1000px;">' + text + '</div>';
+                    } else {
+                        $('[role="tooltip"]').css("visibility", "hidden");//解决鼠标一开始放在上面出现空模块
+                        return "";
+                    }
+                }
+            }).data("kendoTooltip");
+
+            function changeDate(container, options) {
+                var input = $('<input name="' + options.field + '"/>');
+                input.appendTo(container);
+                input.kendoDateTimePicker({
+                    format: "{0:yyyy-MM-dd HH:mm}"
+                });
+            }
+
+            //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+            function onRequestEnd(e) {
+                if (e.type == "create") {
+                    e.sender.read();       //调用read方法 重新读取表格
+                }
+                else if (e.type == "update") {
+                    e.sender.read();
+                }
+                else if (e.type == "destroy") {
+                    e.sender.read();
+                }
+
+                //更新成功后弹出提示信息
+                var response = e.response;
+                if (response) {
+                    var type = e.type;
+                    if (type != 'read') {
+                        var status = response.status;
+                        if (status == 200) {
+                            this.read();
+                        }
+                        else {
+                            // alert(response.msg);
+                        }
+                    }
+                }
+            }
+
+
+            /*]]>*/
+        </script>
+
+        <!--<script type="text/x-kendo-template" id="reviseDate_template">-->
+        <!--#= kendo.toString(reviseDate, "yyyy-MM-dd") #-->
+        <!--</script>-->
+
+        <!--设置tooltip的样式-->
+        <style>
+            div[role=tooltip].k-tooltip {
+                padding: 2px;
+                background: #5c9acf;
+            }
+
+            .k-tooltip-content {
+                padding: 4px;
+                text-align: left;
+                background: #fff;
+                color: #666;
+            }
+
+            .k-callout {
+                border-bottom-color: #5c9acf;
+            }
+        </style>
+    </div>
+
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

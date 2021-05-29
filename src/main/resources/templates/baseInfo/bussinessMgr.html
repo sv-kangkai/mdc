@@ -1,0 +1,365 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>行业分类管理</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section  class="content-header">
+        <h1>
+            行业分类管理
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="../index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">行业分类管理</li>
+        </ol>
+    </section>
+    <div class="container-fluid">
+
+        <div class="container-fluid">
+            <div id="grid"></div>
+            <script id="popup_editor1" type="text/x-kendo-template">
+                <div class="k-edit-label"><label for="name"><span style="color:red;">*</span> 行业分类名称</label></div>
+                <div data-container-for="name" class="k-edit-field"><input type="text" class="k-input k-textbox" name="name" data-bind="value:name" required="required" data-required-msg="请您填写行业分类名称"></div>
+                </script>
+            <script id="popup_editor2" type="text/x-kendo-template">
+                <div class="k-edit-label"><label for="name"><span style="color:red;">*</span> 行业</label></div>
+                <div data-container-for="name" class="k-edit-field"><input type="text" class="k-input k-textbox" name="name" data-bind="value:name" required="required" data-required-msg="请您填写行业"></div>
+                </script>
+            <script>
+                /*<![CDATA[*/
+                $(function () {loadUserList();});
+
+                //初始化表格数据
+                function loadUserList(){
+                var dataSource = new kendo.data.DataSource({
+                        transport: {
+                            read: {
+                                url: "./bussinessMgr/getBusiness"
+                            },
+                            create: {
+                                url: "./bussinessMgr/createBusiness1",
+                                dataType: "json",
+                                type: "post"
+                            },
+                            destroy: {
+                                url: "./bussinessMgr/removeBusiness1",
+                                dataType: "json",
+                                type: "post"
+                            },
+                            update: {
+                                url:  "./bussinessMgr/uppdateBusiness1",
+                                dataType: "json",
+                                type: "post"
+                            }
+                        },
+                        parameterMap:function(options, operation){
+
+                            if(operation ==="create"){
+
+                                console.log(options);
+
+                                return kendo.stringify(options);
+                            }
+                            if(operation === "update"){
+                                return kendo.stringify(options);
+                            }
+                            if(operation === "destroy"){
+                                return kendo.stringify(options);
+                            }
+                        },
+
+                    pageSize :10,
+                    serverPaging: false,
+                    serverSorting: false,
+                    serverFiltering: false,
+                    requestEnd: onRequestEnd,
+
+                    schema: {
+                        model: {
+                            id: "id",
+                            fields: {
+                                id: {type: "number", editable: false},
+                                privinceEntity:{defaultValue: { id: 1, name: ""}}
+                            }
+                        },
+                        data: function (response) {
+                            return response;
+                        }
+
+                    },
+                    scrollable: false,
+                    sortable: true,
+                    pageable: true
+                });
+
+                    //dataSource是必填属性
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    height: 600,
+                    sortable: true,
+                    pageable: true,
+                    groupable: true,
+                    //detailTemplate: kendo.template($("#template").html()),
+                    detailInit: detailInit,
+                    toolbar: [{name: "create", text: "新增"}],
+                    columns: [
+                        {
+                            field: "name",
+                            title: "行业分类名称"
+                        }, {
+                            command: [
+                                {
+                                    name: "edit", text: "编辑"
+                                }, {
+                                    name: "destroy", text: "删除"
+                                }
+                            ],
+                            title: "操作",
+                            width: "250px"
+                        }
+                    ],
+                    editable: {
+                        mode: "popup",
+                        template: kendo.template($("#popup_editor1").html()),
+                        window: {
+                            title: "行业"
+                        }
+                    }
+
+                })
+                }
+
+                function detailInit(e) {
+                    var e=e;
+                    var id=e.data.id;
+// alert(id)
+
+                    $("<div/>").appendTo(e.detailCell).kendoGrid({
+
+
+                        dataSource: {
+                            type: "json",
+                            transport: {
+                                read: "./bussinessMgr/getBusiness2?id="+id,
+                                create: {
+                                    url: "./bussinessMgr/createBusiness2",
+                                    dataType: "json",
+                                    tye: "post",
+                                    contentType:"application/json;charset=UTF-8"
+                                },
+                                destroy: {
+                                    url: "./bussinessMgr/removeBusiness2",
+                                    dataType: "json",
+                                    type: "post",
+                                    contentType:"application/json;charset=UTF-8"
+
+                                },
+                                update: {
+                                    url:  "./bussinessMgr/uppdateBusiness2",
+                                    dataType: "json",
+                                    type: "post",
+                                    contentType:"application/json;charset=UTF-8"
+
+                                },
+
+                                parameterMap:function(options, operation){
+
+                                    if(operation ==="create"){
+                                        options.parentId =id;
+                                        console.log(options);
+
+
+                                        return kendo.stringify(options);
+                                    }
+
+                                    if(operation === "destroy"){
+                                        return kendo.stringify(options);
+                                    }
+                                }
+
+                            },
+                            serverPaging: false,
+                            serverSorting: true,
+                            serverFiltering: true,
+                            requestEnd: onRequestEnd,
+                            pageSize: 10,
+                            schema: {
+                                model: {
+                                    id: "id",
+
+                                    fields: {
+                                        id: {type: "number", editable: false}
+
+                                    }
+                                },
+                                data: function (response) {
+                                    // response.parentId=id;
+                                    return response;
+                                }
+
+                            }
+                        },
+                        scrollable: false,
+                        sortable: true,
+                        pageable: true,
+                        toolbar: [ "create"],
+                        columns: [
+                            { field: "name" ,
+                                title: "行业:",
+                                width: "110px",
+                                //template:"#=provinceEntity.name#",
+
+                            },{
+                                command: [
+
+                                    {
+                                        name: "destroy", text: "删除"
+                                    }
+                                ],
+                                title: "操作",
+                                width: "250px"
+                            }
+
+
+                        ],
+                        editable: {
+                            mode: "popup",
+                            template: kendo.template($("#popup_editor2").html()),
+                            window: {
+                                title: "省"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                id: "id",
+                                // parentId:"parentId",
+                                fields: {
+                                    id: {type: "number", editable: false}
+                                    // parentId:{type: "number",nullable: true}
+                                },
+
+                            },
+                            data: function (response) {
+                                return response;
+                            }
+
+                        },
+
+
+
+                    });
+                }
+
+
+
+
+
+                function changeDate(container, options) {
+                    var input = $('<input name="' + options.field + '"/>');
+                    input.appendTo(container);
+                    input.kendoDateTimePicker({
+                        format: "{0:yyyy-MM-dd HH:mm}"
+                    });
+                }
+
+                //（请求后触发）点击按钮更新表格,只适用于单条修改，直接修改数据库，不适用于批量修改
+                function onRequestEnd(e) {
+                    if (e.type == "create") {
+                        e.sender.read();       //调用read方法 重新读取表格
+                    }
+                    else if (e.type == "update") {
+                        e.sender.read();
+                    }
+                    else if (e.type == "destroy") {
+                        e.sender.read();
+                    }
+
+                    //更新成功后弹出提示信息
+                    var response = e.response;
+                    if (response) {
+                        var type = e.type;
+                        if (type != 'read') {
+                            var status = response.status;
+                            if (status == 200) {this.read();}
+                            else {
+                                // alert(response.msg);
+                            }
+                        }
+                    }
+                }
+
+                //grid改变时触发的事件，暂时用于分页
+                // function onChange(e) {
+                //     page = $("#grid").data("kendoGrid").dataSource.page();
+                //     pageSize = $("#grid").data("kendoGrid").dataSource.pageSize();
+                //     //$("#grid").data("kendoGrid").dataSource.bind("parameterMap", parameterMap);
+                // }
+
+                //dataSource向后台发送数据时触发的事件
+                // function parameterMap(e){
+                //     console.log("parameterMap");
+                //     return {page:page,pageSize:pageSize};
+                // }
+
+                // //编辑时boolean类型复选框样式修改
+                // function customBoolEditor(container, options) {
+                //     var guid = kendo.guid();
+                //     $('<input class="k-checkbox" id="' + guid + '" type="checkbox" name="'+options.field+'" data-type="boolean" data-bind="checked:'+options.field+'">').appendTo(container);
+                //     $('<label class="k-checkbox-label" for="' + guid + '">&#8203;</label>').appendTo(container);
+                // }
+
+                // //打开标记窗口时下拉列表展示
+                // function roleListDropDownEditor(container, options) {
+                //     var userId = options.model.id;
+                //
+                //     $.ajax({
+                //         type: "post",
+                //         async: true,
+                //         url: "/userController/roleList",
+                //         dataType: "json",
+                //         data:{userId:userId},
+                //         success: function (data) {
+                //             $('<select required name="'+options.field+'" multiple="multiple"></select>')
+                //                 .appendTo(container)
+                //                 .kendoMultiSelect({
+                //                     autoBind: false,
+                //                     dataTextField: "roleName",
+                //                     dataValueField: "roleId",
+                //                     dataSource: {
+                //                         serverFiltering: true,
+                //                         transport: {
+                //                             read: {
+                //                                 type: "post",
+                //                                 url: "/roleController/roleList",
+                //                                 dataType: "json",
+                //                                 contentType: "application/json",
+                //                                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+                //                             }
+                //                         }
+                //                     },
+                //                     value: data
+                //                 });
+                //         }
+                //     });
+                // }
+                /*]]>*/
+            </script>
+
+            <!--<script type="text/x-kendo-template" id="reviseDate_template">-->
+            <!--#= kendo.toString(reviseDate, "yyyy-MM-dd") #-->
+            <!--</script>-->
+        </div>
+
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/xhtml">
+<head th:replace="fragments/header::header-css">
+    <title>Triangle Platform</title>
+</head>
+<style type="text/css">
+    .bg {
+        background: url('./img/login_bg.jpg');
+        background-position: center;
+        background-size: 100%;
+        height: 100%;
+        text-align: center;
+        line-height: 100%;
+        position: absolute;
+        z-index: -100;
+        top: 0;
+        left: 0;
+    }
+
+    .bg-blur {
+        /*float: left;*/
+        width: 100%;
+        /*background-repeat: no-repeat;*/
+        /*background-position: center;*/
+        /*background-size: cover;*/
+        -webkit-filter: blur(5px);
+        -moz-filter: blur(5px);
+        -ms-filter: blur(5px);
+        filter: blur(5px);
+        opacity: 0.7;
+        background-color: #808080;
+    }
+</style>
+<body class="hold-transition skin-blue sidebar-mini">
+
+<!--<div th:replace="fragments/header :: header-body"/>-->
+
+<div class="container">
+    <div class="bg bg-blur"></div>
+    <!--<div class="login-box" style="margin:250px auto;">-->
+    <div class="login-box" style="margin:250px auto;">
+        <div class="row" style="width:740px; margin-left:-200px;">
+            <div class="col-lg-6">
+                <div class="login-logo">
+                    <div style="text-align: right">共享按摩椅管理系统</div>
+                    <div style="margin-top: 30px;text-align: right">系统登录</div>
+                </div>
+            </div>
+            <div class="col-lg-6" style="border-left:1px solid white;">
+                <div class="login-box-body">
+                    <form th:action="@{/login}" method="post">
+                        <fieldset>
+                            <div th:if="${param.error}">
+                                <div class="alert alert-danger">
+                                    对不起，您输入的用户名或密码不正确，请重试
+                                </div>
+                            </div>
+                            <div th:if="${param.logout}">
+                                <div class="alert alert-info">
+                                    您已经成功注销系统
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <input type="text" name="username" id="username" class="form-control input-lg"
+                                       placeholder="用户名" required="true" autofocus="true"/>
+                            </div>
+                            <div class="form-group">
+                                <input type="password" name="password" id="password" class="form-control input-lg"
+                                       placeholder="密码" required="true"/>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                    <input type="submit" class="btn btn-lg btn-primary btn-block" value="登录"/>
+                                </div>
+                                <div class="col-xs-6 col-sm-6 col-md-6">
+                                </div>
+                            </div>
+                        </fieldset>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+
+<!--<div th:replace="fragments/footer :: footer"/>-->
+
+</body>
+</html>

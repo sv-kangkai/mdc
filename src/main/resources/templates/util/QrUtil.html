@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>二维码生成</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/jszip/2.4.0/jszip.js"></script>
+    <section class="content-header">
+        <h1>
+            二维码生成
+        </h1>
+        <br/>
+        <ol class="breadcrumb">
+            <li><a href="/mc/index"><i class="fa fa-dashboard"></i>首页</a></li>
+            <li class="active">二维码生成</li>
+        </ol>
+    </section>
+
+    <div class="container-fluid">
+
+        <div class="container-fluid row" >
+           <textarea id="a" rows="20" cols="100" class="col-md-12" >
+           </textarea>
+            <input type="text" id="startnum" rows="1" cols="1" class="col-md-6" >
+           </input>
+            <input type="text" id="endnum" rows="1" cols="1" class="col-md-6" >
+           </input>
+
+            <button class="k-button  k-primary col-md-3" id="getnum" onclick="getnum1()">生成设备sn</button>
+            <button class="k-button  k-primary col-md-3"  onclick="removenum()">清空sn</button>
+
+            <button class="k-button  k-primary col-md-3" id="out" onclick="a1()">生成二维码</button>
+            <button class="k-button  k-primary col-md-3" id="get" onclick="g1()">下载二维码</button>
+
+        </div>
+    </div>
+
+
+
+
+</div>
+
+
+
+<!--<footer th:replace="fragments/footer::footer"/>-->
+<aside th:replace="fragments/menu"/>
+
+</body>
+<script>
+
+$(function(){
+    $("#a").html("");
+    $("#startnum").html("");
+    $("#endnum").html("");
+});
+
+    function a1(){
+        var value= $("#a").val();
+        var json ={
+            sn:value
+        };
+        $.ajax({
+            type: 'POST',
+            url:"./getQrCode",
+            data: json,
+            dataType: "json",
+            contentType: "application/json; charset=utf-8",
+            success: function(data){
+                console.log(data);
+                if (data==true) {
+                    alert("二维码生成成功")
+                }else{
+                    alert("二维码生成失败")
+                }
+            }
+        });
+    }
+
+
+    function g1(){
+      //  window.location="./returnQrCode"
+
+
+
+        $.ajax({
+            type: 'get',
+            url:"./returnQrCode",
+
+            contentType: "application/json; charset=utf-8",
+            success: function(data){
+                window.location="./returnQrCode"
+            }
+        });
+    }
+
+  function getnum1() {
+    //alert('追加了')
+
+      var start=$("#startnum").val();
+      var end=$("#endnum").val();
+      console.log(start,end);
+      var num;
+  for (start;start<=end;start++) {
+          num=start+',';
+      $("#a").append(num)
+  }
+
+
+
+}
+function removenum(){
+    //alert('清空了')
+    $("#a").val("");
+    $("#startnum").val("");
+    $("#endnum").val("");
+    window.location.reload()
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</html>

@@ -1,0 +1,94 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="fragments/header::header-css">
+    <title>Triangle Platform</title>
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div th:replace="fragments/header::header-body"/>
+
+<div class="content-wrapper">
+    <section th:replace="fragments/sitemap"/>
+    <div class="container-fluid">
+        <div id="grid"></div>
+        <script>
+            $(document).ready(function () {
+                var gridDataSource = new kendo.data.DataSource({
+                    transport: {
+                        read: {
+                            url: "/product/readAll"
+                        },
+                        update: {
+                            url: "/product/update",
+                            dataType: "json",
+                            type: "post"
+                            //contentType: "application/x-www-form-urlencoded"
+                            //data: $("#staticForm").serializable
+                        },
+                        destroy: {
+                            url: "/product/destroy",
+                            dataType: "jsonp"
+                        },
+                        create: {
+                            url: "/product/create",
+                            dataType: "jsonp"
+                        },
+                        parameterMap: function (options, operation) {
+                            if (operation !== "read") {
+                                console.log(kendo.stringify(options));
+                                return {models: kendo.stringify(options)};
+                            }
+                        }
+                    },
+                    schema: {
+                        model: {
+                            id: "id",
+                            fields: {
+                                product_id: {type: "number", editable: false},
+                                product_name: {type: "string", editable: false},
+                                product_price: {type: "number"}
+                            }
+                        }
+                    },
+                    pageSize: 20
+                });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: gridDataSource,
+                    height: 550,
+                    filterable: true,
+                    sortable: true,
+                    pageable: true,
+                    groupable: true,
+                    columns: [
+                        {
+                            field: "product_id",
+                            filterable: false,
+                            hidden: true
+                        }, {
+                            field: "product_name",
+                            title: "产品名称"
+                        }, {
+                            field: "product_price",
+                            title: "产品价格"
+                        }, {
+                            command: ["edit", "destroy"]
+                        }],
+                    editable: {
+                        update: true,
+                        destroy: true,
+                        mode: "inline",
+                        confirmation: "Are you sure?"
+                    }
+                });
+            });
+        </script>
+    </div>
+</div>
+<!-- /.container -->
+
+<footer th:replace="fragments/footer::footer"/>
+
+<aside th:replace="fragments/menu"/>
+</body>
+</html>
