@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
 <head>
+  <title>河北省卫生健康委行政许可结果公示</title>
   <!-- ... -->
   <script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
@@ -9,6 +10,7 @@
 
   <!-- DevExtreme library -->
   <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/21.1.3/js/dx.all.js"></script>
+  <script type="text/javascript" src="./devexpress/js/localization/dx.messages.zh.js"></script>
   <!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/21.1.3/js/dx.web.js"></script> -->
   <!-- <script type="text/javascript" src="https://cdn3.devexpress.com/jslib/21.1.3/js/dx.viz.js"></script> -->
 </head>
@@ -24,7 +26,58 @@
       columnResizingMode: "nextColumn",
       columnMinWidth: 50,
       columnAutoWidth: true,
-      showBorders: true,
+      columns:[
+        {
+          dataField: "id",
+          visible: false
+        },
+        {
+          dataField: "caseCode",
+          caption: "办件号"
+        },
+        {
+          dataField: "casePermitsCode",
+          caption: "许可证号"
+        },
+        {
+          dataField: "applyCompanyName",
+          caption: "申请单位"
+        },
+        {
+          dataField: "grantType",
+          caption: "审批程序"
+        },
+        {
+          dataField: "grantProjectName",
+          caption: "许可项目"
+        },
+        {
+          dataField: "beginValidDate",
+          caption: "有效期开始",
+          dataType: "date",
+          format: "yyyy/MM/dd"
+        },
+        {
+          dataField: "endValidDate",
+          caption: "有效期结束",
+          dataType: "date",
+          format: "yyyy/MM/dd"
+        },
+        {
+          dataField: "categoryName",
+          caption: "行业大类"
+        },
+        {
+          dataField: "applyName",
+          caption: "事项名称"
+        },
+        {
+          dataField: "signatureDate",
+          caption: "签批日期",
+          dataType: "date",
+          format: "yyyy/MM/dd"
+        }
+      ],
       filterRow: {
         visible: true,
         applyFilter: "auto"
@@ -36,7 +89,11 @@
       },
       headerFilter: {
         visible: true
-      }
+      },
+      paging: {
+        pageSize: 20
+      },
+      hoverStateEnabled: true
     });
   });
 </script>
