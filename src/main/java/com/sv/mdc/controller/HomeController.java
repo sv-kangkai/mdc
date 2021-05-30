@@ -24,6 +24,10 @@ public class HomeController {
         return modelAndView;
     }
 
+    /**
+     * 取得所有数据
+     * @return 所有数据
+     */
     @ResponseBody
     @GetMapping("/findHebeiAllEntities")
     public List<HebeiPermitsEntity> findAllEntities(){
